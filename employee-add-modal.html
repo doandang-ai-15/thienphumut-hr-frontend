@@ -1,0 +1,192 @@
+<!-- Add Employee Modal -->
+<div id="addEmployeeModal" class="fixed inset-0 z-50 hidden">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-gray-900/50 backdrop-blur-sm backdrop-in" onclick="closeAddEmployeeModal()"></div>
+
+    <!-- Modal Content -->
+    <div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+        <div class="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden pointer-events-auto modal-in">
+            
+            <!-- Header -->
+            <div class="px-8 py-6 border-b border-gray-100 bg-gradient-to-r from-[#FDEDED]/50 to-[#EDFFF0]/50">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-semibold text-gray-800">Thêm nhân viên mới</h2>
+                        <p class="text-sm text-gray-500 mt-1">Vui lòng điền thông tin nhân viên đầy đủ vào các ô bên dưới.</p>
+                    </div>
+                    <button onclick="closeAddEmployeeModal()" class="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
+                        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="px-8 py-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+                <form id="addEmployeeForm" class="space-y-6">
+
+                    <!-- Photo Upload -->
+                    <div class="flex justify-center mb-8">
+                        <div class="text-center">
+                            
+                            <div id="previewAvatar"
+                                class="w-28 h-28 mx-auto rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer bg-gray-50 overflow-hidden"
+                                onclick="document.getElementById('photoInput').click()">
+                                <i data-lucide="camera" id="previewIcon" class="w-8 h-8 text-gray-400"></i>
+                            </div>
+
+                            <input type="file" id="photoInput" accept="image/*" class="hidden">
+                            <p class="text-xs text-gray-400 mt-2">Chỉ nhận file định dạng JPG, PNG tối đa 5MB</p>
+                        </div>
+                    </div>
+
+                    <!-- PERSONAL INFO -->
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                            <i data-lucide="user" class="w-4 h-4 text-[#F875AA]"></i>
+                            Thông tin theo giấy khai sinh (Các mục có * là bắt buộc)
+                        </h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-sm font-medium text-gray-600 mb-2 block">Họ và tên đệm *</label>
+                                <input type="text" name="first_name" required class="input-field w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white">
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-medium text-gray-600 mb-2 block">Tên *</label>
+                                <input type="text" name="last_name" required class="input-field w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white">
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-medium text-gray-600 mb-2 block">Email *</label>
+                                <input type="email" name="email" required class="input-field w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white">
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-medium text-gray-600 mb-2 block">Số điện thoại</label>
+                                <input type="tel" name="phone" class="input-field w-full px-4 py-3 rounded-xl border-2 bg-white">
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-medium text-gray-600 mb-2 block">Sinh nhật</label>
+                                <input type="date" name="date_of_birth" class="input-field w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white">
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-medium text-gray-600 mb-2 block">Giới</label>
+                                <select name="gender" class="input-field w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white">
+                                    <option value="">Vui lòng chọn giới tính</option>
+                                    <option value="male">Nam</option>
+                                    <option value="female">Nữ</option>
+                                    <option value="other">Chưa xác định / Không muốn nói</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- EMPLOYMENT INFO -->
+                    <div class="pt-4 border-t">
+                        <h3 class="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                            <i data-lucide="briefcase" class="w-4 h-4 text-[#AEDEFC]"></i>
+                            Thông tin vị trí công việc
+                        </h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-sm font-medium text-gray-600 mb-2 block">Chức vụ *</label>
+                                <input type="text" name="job_title" required class="input-field w-full px-4 py-3 rounded-xl border bg-white">
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-medium text-gray-600 mb-2 block">Phòng ban *</label>
+                                <select name="department" required class="input-field w-full px-4 py-3 rounded-xl border bg-white">
+                                    <option value="">Vui lòng chọn phòng ban</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-medium text-gray-600 mb-2 block">Làm việc theo diện: *</label>
+                                <select name="employment_type" required class="input-field w-full px-4 py-3 rounded-xl border bg-white">
+                                    <option value="">Chọn diện làm việc</option>
+                                    <option value="full-time">Toàn thời gian + tăng ca</option>
+                                    <option value="part-time">Bán thời gian / thời vụ</option>
+                                    <option value="contract">Theo hợp đồng</option>
+                                    <option value="intern">Thực tập</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-medium text-gray-600 mb-2 block">Ngày bắt đầu làm việc *</label>
+                                <input type="date" name="start_date" required class="input-field w-full px-4 py-3 rounded-xl border bg-white">
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-medium text-gray-600 mb-2 block">Mức lương cơ bản (theo đơn vị VND)</label>
+                                <input type="number" name="salary" step="0.01" class="input-field w-full px-4 py-3 rounded-xl border bg-white">
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-medium text-gray-600 mb-2 block">Thanh toán theo</label>
+                                <select name="pay_frequency" class="input-field w-full px-4 py-3 rounded-xl border bg-white">
+                                    <option value="">Chọn hình thức thanh toán</option>
+                                    <option value="weekly">Trả theo tuần</option>
+                                    <option value="bi-weekly">2 tuần một lần </option>
+                                    <option value="monthly">Mỗi tháng</option>
+                                    <option value="annually">Mỗi năm</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ADDRESS INFO -->
+                    <div class="pt-4 border-t">
+                        <h3 class="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                            <i data-lucide="map-pin" class="w-4 h-4 text-green-500"></i>
+                            Địa chỉ thường trú
+                        </h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="md:col-span-2">
+                                <label class="text-sm font-medium text-gray-600 mb-2 block">Địa chỉ chi tiết:</label>
+                                <input type="text" name="address" class="input-field w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white">
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-medium text-gray-600 mb-2 block">Đường:</label>
+                                <input type="text" name="city" class="input-field w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white">
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-medium text-gray-600 mb-2 block">Phường:</label>
+                                <input type="text" name="state" class="input-field w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white">
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-medium text-gray-600 mb-2 block">Thành phố</label>
+                                <input type="text" name="zip_code" class="input-field w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white">
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-medium text-gray-600 mb-2 block">Quốc tịch</label>
+                                <input type="text" name="country" class="input-field w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white">
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-8 py-5 border-t bg-gradient-to-r from-[#FDEDED]/30 to-[#EDFFF0]/30">
+                <div class="flex items-center justify-between">
+                    <button type="button" onclick="closeAddEmployeeModal()" class="px-6 py-2.5 rounded-xl border-2 border-gray-200 text-gray-600">Huỷ</button>
+
+                    <button type="submit" form="addEmployeeForm"
+                        class="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#F875AA] to-[#AEDEFC] text-white rounded-xl">
+                        <i data-lucide="user-plus" class="w-4 h-4"></i> Thêm nhân viên
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

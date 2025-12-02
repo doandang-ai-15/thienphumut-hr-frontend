@@ -1,0 +1,152 @@
+<!-- Add Leave Application Modal (Standalone Component) -->
+<div id="addLeaveModal" class="fixed inset-0 z-50 hidden">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" onclick="closeAddLeaveModal()"></div>
+
+    <!-- Modal Content -->
+    <div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+        <div class="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden pointer-events-auto">
+            <!-- Modal Header -->
+            <div class="px-8 py-6 border-b border-gray-100 bg-gradient-to-r from-[#FDEDED]/50 to-[#EDFFF0]/50">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-semibold text-gray-800">
+                            Thêm đơn nghỉ phép mới
+                        </h2>
+                        <p class="text-sm text-gray-500 mt-1">
+                            Điền chi tiết đơn nghỉ phép của bạn bên dưới.
+                        </p>
+                    </div>
+                    <button onclick="closeAddLeaveModal()" class="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
+                        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="px-8 py-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+                <form id="addLeaveForm" class="space-y-6">
+                    <!-- Employee Selection (for Admin/Manager) -->
+                    <div id="employeeSelectionSection">
+                        <h3 class="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                            <i data-lucide="user" class="w-4 h-4 text-[#F875AA]"></i>
+                            Thông tin nhân viên
+                        </h3>
+                        <div>
+                            <label class="text-sm font-medium text-gray-600 mb-2 block">
+                                Chọn nhân viên
+                                <span class="text-red-400">*</span></label>
+                            <div class="relative">
+                                <select name="employee_id" id="employeeSelect" required class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white focus:border-[#F875AA] focus:outline-none text-sm appearance-none cursor-pointer">
+                                    <option value="">Đang tải thông tin...</option>
+                                </select>
+                                <i data-lucide="chevron-down" class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">
+                                <i data-lucide="info" class="w-3 h-3 inline"></i>
+                                Nếu bạn là nhân viên, mục này sẽ tự động điền với thông tin của bạn.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Leave Type -->
+                    <div class="pt-4 border-t border-gray-100">
+                        <h3 class="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                            <i data-lucide="calendar" class="w-4 h-4 text-[#AEDEFC]"></i>
+                            Thông tin nghỉ phép
+                        </h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-sm font-medium text-gray-600 mb-2 block">
+                                    Loại phép
+                                    <span class="text-red-400">*</span></label>
+                                <div class="relative">
+                                    <select name="leave_type" required class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white focus:border-[#F875AA] focus:outline-none text-sm appearance-none cursor-pointer">
+                                        <option value="">Chọn loại phép</option>
+                                        <option value="Du lịch">Du lịch</option>
+                                        <option value="Bệnh">Bệnh</option>
+                                        <option value="Lý do cá nhân">Lý do cá nhân</option>
+                                        <option value="Thai sản">Thai sản</option>
+                                        <option value="Nghĩa vụ quân sự">Nghĩa vụ quân sự</option>
+                                        <option value="Nghỉ không lương">Nghỉ không lương</option>
+                                        <option value="Khác">Khác</option>
+                                    </select>
+                                    <i data-lucide="chevron-down" class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Duration -->
+                    <div class="pt-4 border-t border-gray-100">
+                        <h3 class="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                            <i data-lucide="calendar-days" class="w-4 h-4 text-[#AEDEFC]"></i>
+                            Thời gian nghỉ phép
+                        </h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-sm font-medium text-gray-600 mb-2 block">
+                                    Bắt đầu
+                                <span class="text-red-400">*</span></label>
+                                <input type="date" name="start_date" required class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white focus:border-[#F875AA] focus:outline-none text-sm">
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-600 mb-2 block">Kết thúc<span class="text-red-400">*</span></label>
+                                <input type="date" name="end_date" required class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white focus:border-[#F875AA] focus:outline-none text-sm">
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">
+                            <i data-lucide="info" class="w-3 h-3 inline"></i>
+                            Chọn ngày bắt đầu và kết thúc cho kỳ nghỉ phép của bạn.
+                        </p>
+                    </div>
+
+                    <!-- Reason -->
+                    <div class="pt-4 border-t border-gray-100">
+                        <h3 class="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                            <i data-lucide="file-text" class="w-4 h-4 text-green-500"></i>
+                            Lý do nghỉ phép
+                        </h3>
+                        <div>
+                            <label class="text-sm font-medium text-gray-600 mb-2 block">Cụ thể<span class="text-red-400">*</span></label>
+                            <textarea name="reason" rows="4" required placeholder="Nhập lý do nhân viên nghỉ..." class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white focus:border-[#F875AA] focus:outline-none text-sm resize-none"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Important Notes -->
+                    <div class="p-4 bg-blue-50 rounded-xl border border-blue-100">
+                        <div class="flex gap-3">
+                            <i data-lucide="alert-circle" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"></i>
+                            <div class="text-sm text-blue-800">
+                                <p class="font-medium mb-1">Ghi chú:</p>
+                                <ul class="list-disc list-inside space-y-1 text-xs">
+                                    <li>Đơn xin nghỉ phép cần có sự chấp thuận của người quản lý</li>
+                                    <li>Nộp đơn trước ít nhất 3 ngày đối với trường hợp nghỉ phép theo kế hoạch</li>
+                                    <li>
+Đối với nghỉ ốm, có thể cần giấy chứng nhận y tế
+                                    </li>
+                                    <li>
+Hãy chắc chắn rằng nhân viên đã hiểu chính sách nghỉ phép của công ty
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-8 py-5 border-t border-gray-100 bg-gradient-to-r from-[#FDEDED]/30 to-[#EDFFF0]/30">
+                <div class="flex items-center justify-between">
+                    <button type="button" onclick="closeAddLeaveModal()" class="px-6 py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 font-medium text-sm hover:bg-gray-50 transition-colors">
+                        Huỷ
+                    </button>
+                    <button type="submit" form="addLeaveForm" class="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#F875AA] to-[#AEDEFC] text-white rounded-xl font-medium text-sm hover:shadow-lg hover:-translate-y-0.5 transition-all">
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                        Nộp đơn nghỉ phép
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

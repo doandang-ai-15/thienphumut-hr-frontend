@@ -1,0 +1,525 @@
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - Thiên Phú Mút</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+
+    <!-- API Configuration -->
+    <script src="/js/config.js"></script>
+    <script src="/js/api.js"></script>
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        
+        @keyframes float-reverse {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(-5deg); }
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(248, 117, 170, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(248, 117, 170, 0.6); }
+        }
+        
+        @keyframes slide-up {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes bounce-in {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .float-animation { animation: float 6s ease-in-out infinite; }
+        .float-animation-reverse { animation: float-reverse 5s ease-in-out infinite; }
+        .slide-up { animation: slide-up 0.6s ease-out forwards; }
+        .fade-in { animation: fade-in 0.8s ease-out forwards; }
+        .bounce-in { animation: bounce-in 0.6s ease-out forwards; }
+        
+        .btn-glow:hover { animation: pulse-glow 1.5s ease-in-out infinite; }
+        
+        .input-field {
+            transition: all 0.3s ease;
+        }
+        
+        .input-field:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(248, 117, 170, 0.2);
+        }
+        
+        .form-container {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .social-btn {
+            transition: all 0.3s ease;
+        }
+        
+        .social-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+        }
+        
+        .tab-indicator {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .loading-spinner {
+            animation: spin-slow 1s linear infinite;
+        }
+        
+        .shimmer-btn {
+            background: linear-gradient(90deg, #F875AA 0%, #AEDEFC 50%, #F875AA 100%);
+            background-size: 200% 100%;
+        }
+        
+        .shimmer-btn:hover {
+            animation: shimmer 2s linear infinite;
+        }
+        
+        .password-strength-bar {
+            transition: all 0.3s ease;
+        }
+        
+        .blob {
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+        }
+        
+        .input-error {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+        }
+        
+        .input-success {
+            border-color: #22c55e !important;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1) !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-[#FDEDED] via-white to-[#EDFFF0] overflow-hidden">
+    <!-- Animated Background Elements -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-20 left-10 w-72 h-72 bg-[#F875AA]/20 rounded-full blur-3xl float-animation"></div>
+        <div class="absolute bottom-20 right-10 w-96 h-96 bg-[#AEDEFC]/30 rounded-full blur-3xl float-animation-reverse"></div>
+        <div class="absolute top-1/2 left-1/4 w-64 h-64 bg-[#EDFFF0]/50 rounded-full blur-3xl float-animation" style="animation-delay: 1s;"></div>
+        <div class="absolute bottom-1/3 left-1/2 w-48 h-48 bg-[#F875AA]/10 blob blur-2xl float-animation-reverse" style="animation-delay: 2s;"></div>
+        
+        <!-- Decorative shapes -->
+        <div class="absolute top-32 right-1/4 w-8 h-8 bg-[#F875AA]/40 rounded-lg rotate-45 float-animation" style="animation-delay: 0.5s;"></div>
+        <div class="absolute bottom-40 left-1/3 w-6 h-6 bg-[#AEDEFC]/60 rounded-full float-animation-reverse" style="animation-delay: 1.5s;"></div>
+        <div class="absolute top-1/4 left-20 w-4 h-4 bg-[#EDFFF0] rounded-full float-animation" style="animation-delay: 2.5s;"></div>
+        <div class="absolute bottom-1/4 right-20 w-10 h-10 border-2 border-[#F875AA]/30 rounded-xl rotate-12 float-animation-reverse"></div>
+    </div>
+
+    <div class="min-h-screen flex items-center justify-center p-4 relative z-10">
+        <div class="w-full max-w-md">
+            <!-- Logo and Welcome Message -->
+            <div class="text-center mb-8 slide-up">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#F875AA] to-[#AEDEFC] mb-4 shadow-lg bounce-in" style="animation-delay: 0.2s;">
+                    <span class="text-white font-bold text-2xl tracking-tighter">HR</span>
+                </div>
+                <h1 class="text-3xl font-semibold text-gray-800 tracking-tight mb-2">Chào mừng đến với
+                    </h1>
+                    <h1 class="text-3xl font-semibold text-gray-800 tracking-tight mb-2">
+                    Quản Lý Nhân Sự</h1>
+                      <h1 class="text-3xl font-semibold text-gray-800 tracking-tight mb-2">
+                     Thiên Phú Mút!</h1>
+                <p class="text-gray-500">
+                    Quản lý nhân sự của bạn một cách dễ dàng và hiệu quả
+                </p>
+            </div>
+
+            <!-- Main Card -->
+            <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/50 overflow-hidden slide-up" style="animation-delay: 0.3s;">
+                <!-- Tab Switcher -->
+                <div class="flex relative bg-gray-50/50 p-1.5 m-4 rounded-2xl">
+                    <div id="tabIndicator" class="tab-indicator absolute h-[calc(100%-12px)] w-[calc(50%-6px)] bg-white rounded-xl shadow-sm top-1.5 left-1.5"></div>
+                    <button id="loginTab" onclick="switchTab('login')" class="relative z-10 flex-1 py-3 text-sm font-medium text-[#F875AA] rounded-xl transition-colors">
+                        Đăng Nhập
+                    </button>
+                    <button id="registerTab" onclick="switchTab('register')" class="relative z-10 flex-1 py-3 text-sm font-medium text-gray-500 rounded-xl transition-colors">
+                        Đăng Ký
+                    </button>
+                </div>
+
+                <div class="p-6 pt-2">
+                    <!-- Login Form -->
+                    <div id="loginForm" class="form-container">
+                        <form onsubmit="handleLogin(event)" class="space-y-4">
+                            <!-- Email Input -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium text-gray-700">Địa chỉ Email</label>
+                                <div class="relative">
+                                    <div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                                        <i data-lucide="mail" class="w-5 h-5"></i>
+                                    </div>
+                                    <input type="email" id="loginEmail" placeholder="you@company.com" class="input-field w-full pl-12 pr-4 py-3.5 rounded-xl border-2 border-gray-100 bg-white/50 focus:border-[#F875AA] focus:outline-none text-sm" required="">
+                                </div>
+                            </div>
+
+                            <!-- Password Input -->
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <label class="text-sm font-medium text-gray-700">
+                                        Mật khẩu
+                                    </label>
+                                    <a href="#" class="text-xs text-[#F875AA] hover:text-[#e5649a] transition-colors font-medium">
+                                        Quên mật khẩu?
+                                    </a>
+                                </div>
+                                <div class="relative">
+                                    <div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                                        <i data-lucide="lock" class="w-5 h-5"></i>
+                                    </div>
+                                    <input type="password" id="loginPassword" placeholder="••••••••" class="input-field w-full pl-12 pr-12 py-3.5 rounded-xl border-2 border-gray-100 bg-white/50 focus:border-[#F875AA] focus:outline-none text-sm" required="">
+                                    <button type="button" onclick="togglePassword('loginPassword', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                                        <i data-lucide="eye" class="w-5 h-5"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Remember Me -->
+                            <div class="flex items-center gap-3">
+                                <div class="relative">
+                                    <input type="checkbox" id="rememberMe" class="peer sr-only">
+                                    <label for="rememberMe" class="w-5 h-5 rounded-md border-2 border-gray-200 bg-white flex items-center justify-center cursor-pointer peer-checked:bg-[#F875AA] peer-checked:border-[#F875AA] transition-all">
+                                        <i data-lucide="check" class="w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity"></i>
+                                    </label>
+                                </div>
+                                <label for="rememberMe" class="text-sm text-gray-600 cursor-pointer">Nhớ mật khẩu</label>
+                            </div>
+
+                            <!-- Login Button -->
+                            <button type="submit" id="loginBtn" class="shimmer-btn btn-glow w-full py-4 rounded-xl bg-gradient-to-r from-[#F875AA] to-[#AEDEFC] text-white font-semibold text-sm hover:shadow-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0">
+                                <span id="loginBtnText">
+                                    Đăng Nhập vào Thiên Phú Mút HR
+                                </span>
+                                <span id="loginBtnLoader" class="hidden items-center justify-center gap-2">
+                                    <svg class="loading-spinner w-5 h-5" viewBox="0 0 24 24" fill="none">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-dasharray="31.4 31.4" stroke-dashoffset="0"></circle>
+                                    </svg>
+                                    Đang đăng nhập...
+                                </span>
+                            </button>
+                        </form>
+
+                        <!-- Divider -->
+                        <div class="flex items-center gap-4 my-6">
+                            <div class="flex-1 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
+                            <span class="text-xs text-gray-400 font-medium">hoặc đăng nhập bằng</span>
+                            <div class="flex-1 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
+                        </div>
+
+                        <!-- Social Login -->
+                        <div class="grid grid-cols-3 gap-3">
+                            <button class="social-btn flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-gray-100 bg-white hover:border-[#F875AA]/30 hover:bg-[#FDEDED]/30">
+                                <svg class="w-5 h-5" viewBox="0 0 24 24">
+                                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"></path>
+                                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"></path>
+                                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"></path>
+                                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"></path>
+                                </svg>
+                            </button>
+                            <button class="social-btn flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-gray-100 bg-white hover:border-[#F875AA]/30 hover:bg-[#FDEDED]/30">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0012 2z"></path>
+                                </svg>
+                            </button>
+                            <button class="social-btn flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-gray-100 bg-white hover:border-[#F875AA]/30 hover:bg-[#FDEDED]/30">
+                                <svg class="w-5 h-5 text-[#0A66C2]" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Register Form -->
+                    <div id="registerForm" class="form-container hidden">
+                        <form onsubmit="handleRegister(event)" class="space-y-4">
+                            <!-- Full Name Input -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium text-gray-700">
+                                    Họ và tên
+                                </label>
+                                <div class="relative">
+                                    <div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                                        <i data-lucide="user" class="w-5 h-5"></i>
+                                    </div>
+                                    <input type="text" id="registerName" placeholder="John Doe" class="input-field w-full pl-12 pr-4 py-3.5 rounded-xl border-2 border-gray-100 bg-white/50 focus:border-[#F875AA] focus:outline-none text-sm" required="">
+                                </div>
+                            </div>
+
+                            <!-- Email Input -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium text-gray-700">
+                                    Địa chỉ Email
+                                </label>
+                                <div class="relative">
+                                    <div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                                        <i data-lucide="mail" class="w-5 h-5"></i>
+                                    </div>
+                                    <input type="email" id="registerEmail" placeholder="you@company.com" class="input-field w-full pl-12 pr-10 py-3.5 rounded-xl border-2 border-gray-100 bg-white/50 focus:border-[#F875AA] focus:outline-none text-sm" required="" oninput="validateEmail(this)">
+                                    <div id="emailCheck" class="absolute right-4 top-1/2 -translate-y-1/2 hidden">
+                                        <i data-lucide="check-circle" class="w-5 h-5 text-green-500"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Password Input -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium text-gray-700">
+                                    Mật khẩu
+                                </label>
+                                <div class="relative">
+                                    <div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                                        <i data-lucide="lock" class="w-5 h-5"></i>
+                                    </div>
+                                    <input type="password" id="registerPassword" placeholder="••••••••" class="input-field w-full pl-12 pr-12 py-3.5 rounded-xl border-2 border-gray-100 bg-white/50 focus:border-[#F875AA] focus:outline-none text-sm" required="" oninput="checkPasswordStrength(this.value)">
+                                    <button type="button" onclick="togglePassword('registerPassword', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                                        <i data-lucide="eye" class="w-5 h-5"></i>
+                                    </button>
+                                </div>
+                                <!-- Password Strength -->
+                                <div class="flex items-center gap-2">
+                                    <div class="flex-1 flex gap-1">
+                                        <div id="strength1" class="password-strength-bar h-1 flex-1 rounded-full bg-gray-200"></div>
+                                        <div id="strength2" class="password-strength-bar h-1 flex-1 rounded-full bg-gray-200"></div>
+                                        <div id="strength3" class="password-strength-bar h-1 flex-1 rounded-full bg-gray-200"></div>
+                                        <div id="strength4" class="password-strength-bar h-1 flex-1 rounded-full bg-gray-200"></div>
+                                    </div>
+                                    <span id="strengthText" class="text-xs text-gray-400">
+                                        Độ mạnh mật khẩu
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Confirm Password Input -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium text-gray-700">
+                                    Xác nhận mật khẩu
+                                </label>
+                                <div class="relative">
+                                    <div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                                        <i data-lucide="lock" class="w-5 h-5"></i>
+                                    </div>
+                                    <input type="password" id="confirmPassword" placeholder="••••••••" class="input-field w-full pl-12 pr-12 py-3.5 rounded-xl border-2 border-gray-100 bg-white/50 focus:border-[#F875AA] focus:outline-none text-sm" required="" oninput="checkPasswordMatch()">
+                                    <div id="passwordMatch" class="absolute right-4 top-1/2 -translate-y-1/2 hidden">
+                                        <i data-lucide="check-circle" class="w-5 h-5 text-green-500"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Terms -->
+                            <div class="flex items-start gap-3">
+                                <div class="relative mt-0.5">
+                                    <input type="checkbox" id="agreeTerms" class="peer sr-only" required="">
+                                    <label for="agreeTerms" class="w-5 h-5 rounded-md border-2 border-gray-200 bg-white flex items-center justify-center cursor-pointer peer-checked:bg-[#F875AA] peer-checked:border-[#F875AA] transition-all">
+                                        <i data-lucide="check" class="w-3 h-3 text-white"></i>
+                                    </label>
+                                </div>
+                                <label for="agreeTerms" class="text-sm text-gray-600 cursor-pointer">
+                                    Tôi đồng ý với <a href="#" class="text-[#F875AA] hover:underline">Điều khoản dịch vụ</a> and <a href="#" class="text-[#F875AA] hover:underline">Chính sách bảo mật</a>
+                                </label>
+                            </div>
+
+                            <!-- Register Button -->
+                            <button type="submit" id="registerBtn" class="shimmer-btn btn-glow w-full py-4 rounded-xl bg-gradient-to-r from-[#F875AA] to-[#AEDEFC] text-white font-semibold text-sm hover:shadow-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0">
+                                <span id="registerBtnText"> 
+                                    Tạo tài khoản Thiên Phú Mút HR
+                                </span>
+                                <span id="registerBtnLoader" class="hidden items-center justify-center gap-2">
+                                    <svg class="loading-spinner w-5 h-5" viewBox="0 0 24 24" fill="none">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-dasharray="31.4 31.4" stroke-dashoffset="0"></circle>
+                                    </svg>
+                                    Đang tạo tài khoản...
+                                </span>
+                            </button>
+                        </form>
+
+                        <!-- Divider -->
+                        <div class="flex items-center gap-4 my-6">
+                            <div class="flex-1 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
+                            <span class="text-xs text-gray-400 font-medium">
+                                hoặc đăng ký bằng
+                            </span>
+                            <div class="flex-1 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
+                        </div>
+
+                        <!-- Social Register -->
+                        <div class="grid grid-cols-3 gap-3">
+                            <button class="social-btn flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-gray-100 bg-white hover:border-[#F875AA]/30 hover:bg-[#FDEDED]/30">
+                                <svg class="w-5 h-5" viewBox="0 0 24 24">
+                                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"></path>
+                                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"></path>
+                                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"></path>
+                                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"></path>
+                                </svg>
+                            </button>
+                            <button class="social-btn flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-gray-100 bg-white hover:border-[#F875AA]/30 hover:bg-[#FDEDED]/30">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0012 2z"></path>
+                                </svg>
+                            </button>
+                            <button class="social-btn flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-gray-100 bg-white hover:border-[#F875AA]/30 hover:bg-[#FDEDED]/30">
+                                <svg class="w-5 h-5 text-[#0A66C2]" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <p class="text-center text-sm text-gray-400 mt-6 fade-in" style="animation-delay: 0.5s;">
+                © 2025 ThienPhuMut.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        let currentTab = 'login';
+
+        function switchTab(tab) {
+            currentTab = tab;
+            const indicator = document.getElementById('tabIndicator');
+            const loginTab = document.getElementById('loginTab');
+            const registerTab = document.getElementById('registerTab');
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+
+            if (tab === 'login') {
+                indicator.style.left = '6px';
+                loginTab.classList.add('text-[#F875AA]');
+                loginTab.classList.remove('text-gray-500');
+                registerTab.classList.add('text-gray-500');
+                registerTab.classList.remove('text-[#F875AA]');
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+            } else {
+                indicator.style.left = 'calc(50% + 3px)';
+                registerTab.classList.add('text-[#F875AA]');
+                registerTab.classList.remove('text-gray-500');
+                loginTab.classList.add('text-gray-500');
+                loginTab.classList.remove('text-[#F875AA]');
+                registerForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+            }
+            
+            lucide.createIcons();
+        }
+
+        function togglePassword(inputId, button) {
+            const input = document.getElementById(inputId);
+            const icon = button.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                input.type = 'password';
+                icon.setAttribute('data-lucide', 'eye');
+            }
+            lucide.createIcons();
+        }
+
+        function checkPasswordStrength(password) {
+            const strength1 = document.getElementById('strength1');
+            const strength2 = document.getElementById('strength2');
+            const strength3 = document.getElementById('strength3');
+            const strength4 = document.getElementById('strength4');
+            const strengthText = document.getElementById('strengthText');
+
+            let strength = 0;
+            if (password.length >= 8) strength++;
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+            if (/\d/.test(password)) strength++;
+            if (/[^a-zA-Z0-9]/.test(password)) strength++;
+
+            const colors = ['bg-gray-200', 'bg-red-400', 'bg-yellow-400', 'bg-[#AEDEFC]', 'bg-green-400'];
+            const texts = ['Password strength', 'Weak', 'Fair', 'Good', 'Strong'];
+
+            [strength1, strength2, strength3, strength4].forEach((bar, index) => {
+                bar.className = 'password-strength-bar h-1 flex-1 rounded-full transition-all ' + 
+                    (index < strength ? colors[strength] : 'bg-gray-200');
+            });
+
+            strengthText.textContent = texts[strength];
+            strengthText.className = 'text-xs ' + (strength === 0 ? 'text-gray-400' : 
+                strength === 1 ? 'text-red-400' : 
+                strength === 2 ? 'text-yellow-500' : 
+                strength === 3 ? 'text-[#7BC4F0]' : 'text-green-500');
+        }
+
+        function validateEmail(input) {
+            const emailCheck = document.getElementById('emailCheck');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (emailRegex.test(input.value)) {
+                emailCheck.classList.remove('hidden');
+                input.classList.add('input-success');
+                input.classList.remove('input-error');
+            } else {
+                emailCheck.classList.add('hidden');
+                if (input.value.length > 0) {
+                    input.classList.add('input-error');
+                    input.classList.remove('input-success');
+                } else {
+                    input.classList.remove('input-error', 'input-success');
+                }
+            }
+            lucide.createIcons();
+        }
+
+        function checkPasswordMatch() {
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword');
+            const passwordMatch = document.getElementById('passwordMatch');
+            
+            if (confirmPassword.value === password && confirmPassword.value.length > 0) {
+                passwordMatch.classList.remove('hidden');
+                confirmPassword.classList.add('input-success');
+                confirmPassword.classList.remove('input-error');
+            } else {
+                passwordMatch.classList.add('hidden');
+                if (confirmPassword.value.length > 0) {
+                    confirmPassword.classList.add('input-error');
+                    confirmPassword.classList.remove('input-success');
+                } else {
+                    confirmPassword.classList.remove('input-error', 'input-success');
+                }
+            }
+            lucide.createIcons();
+        }
+
+    </script>
+
+    <!-- Auth Script -->
+    <script src="/js/auth.js"></script>
+</body></html>

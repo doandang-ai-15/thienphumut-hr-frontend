@@ -1,0 +1,667 @@
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cài đặt - Thiên Phú Mút</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+
+    <!-- API Scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/navigation.js"></script>
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 0.3; }
+        }
+        
+        @keyframes fade-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .float-animation { animation: float 6s ease-in-out infinite; }
+        .pulse-soft { animation: pulse-soft 4s ease-in-out infinite; }
+        .fade-up { animation: fade-up 0.5s ease-out forwards; }
+        
+        .sidebar-item {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .sidebar-item:hover {
+            transform: translateX(4px);
+        }
+        
+        .sidebar-item.active {
+            background: linear-gradient(135deg, #F875AA20, #AEDEFC20);
+            border-left: 3px solid #F875AA;
+        }
+        
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(248, 117, 170, 0.1);
+        }
+        
+        .stagger-1 { animation-delay: 0.1s; opacity: 0; }
+        .stagger-2 { animation-delay: 0.2s; opacity: 0; }
+        .stagger-3 { animation-delay: 0.3s; opacity: 0; }
+        .stagger-4 { animation-delay: 0.4s; opacity: 0; }
+        .stagger-5 { animation-delay: 0.5s; opacity: 0; }
+        
+        .settings-nav-item {
+            transition: all 0.2s ease;
+        }
+        
+        .settings-nav-item.active {
+            background: linear-gradient(135deg, #F875AA10, #AEDEFC10);
+            border-right: 3px solid #F875AA;
+            color: #F875AA;
+        }
+        
+        .toggle-switch {
+            transition: all 0.3s ease;
+        }
+        
+        .toggle-switch.active {
+            background: linear-gradient(135deg, #F875AA, #AEDEFC);
+        }
+        
+        .toggle-switch .toggle-dot {
+            transition: all 0.3s ease;
+        }
+        
+        .toggle-switch.active .toggle-dot {
+            transform: translateX(20px);
+        }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #FDEDED; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #F875AA, #AEDEFC); border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-[#FDEDED] via-white to-[#EDFFF0] min-h-screen">
+    <!-- Background Elements -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-20 left-60 w-96 h-96 bg-[#F875AA]/10 rounded-full blur-3xl float-animation"></div>
+        <div class="absolute bottom-20 right-20 w-80 h-80 bg-[#AEDEFC]/20 rounded-full blur-3xl float-animation" style="animation-delay: 2s;"></div>
+        <div class="absolute top-1/2 right-1/3 w-64 h-64 bg-[#EDFFF0]/40 rounded-full blur-3xl pulse-soft"></div>
+    </div>
+
+    <div class="flex min-h-screen relative z-10">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white/70 backdrop-blur-xl border-r border-white/50 flex flex-col fixed h-full z-20">
+            <!-- Logo -->
+            <div class="p-6 border-b border-gray-100/50">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F875AA] to-[#AEDEFC] flex items-center justify-center shadow-lg">
+                        <span class="text-white font-bold text-sm tracking-tighter">HR</span>
+                    </div>
+                    <span class="text-lg font-semibold text-gray-800 tracking-tight">Thiên Phú Mút</span>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-1 p-4 space-y-1">
+                <a href="index.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-[#FDEDED]/50">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span class="text-sm font-medium">
+                        Bảng tổng quát
+                    </span>
+                </a>
+                <a href="employees.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-[#FDEDED]/50">
+                    <i data-lucide="users" class="w-5 h-5"></i>
+                    <span class="text-sm font-medium">
+                        Nhân viên
+                    </span>
+                </a>
+                <a href="departments.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-[#FDEDED]/50">
+                    <i data-lucide="building-2" class="w-5 h-5"></i>
+                    <span class="text-sm font-medium">
+                        Phòng ban
+                    </span>
+                </a>
+                <a href="leaveApplications.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-[#FDEDED]/50">
+                    <i data-lucide="calendar-days" class="w-5 h-5"></i>
+                    <span class="text-sm font-medium">
+                        Đơn nghỉ phép
+                    </span>
+                </a>
+                <a href="contracts.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-[#FDEDED]/50">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span class="text-sm font-medium">
+                        Hợp đồng
+                    </span>
+                </a>
+                <a href="settings.html" class="sidebar-item active flex items-center gap-3 px-4 py-3 rounded-xl text-[#F875AA]">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
+                    <span class="text-sm font-medium">
+                        Cài đặt
+                    </span>
+                </a>
+           
+ <div class="mt-10 p-4 rounded-2xl bg-gradient-to-br from-[#F875AA]/10 to-[#AEDEFC]/10 border border-[#F875AA]/20">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#F875AA] to-[#AEDEFC] flex items-center justify-center mb-3">
+                    <i data-lucide="sparkles" class="w-6 h-6 text-white"></i>
+                </div>
+                <p class="text-sm font-medium text-gray-800 mb-1">Xảy ra lỗi?</p>
+                <p class="text-xs text-gray-500 mb-3">Nếu trong quá trình sử dụng gặp bất kỳ trục trặc nào, vui lòng thông báo hỗ trợ ngay.</p>
+                <a href="https://zalo.me/0835911358" target="_blank" class="w-full py-2 rounded-lg bg-[#F875AA] text-white text-xs font-medium hover:bg-[#e5649a] transition-colors inline-block text-center">
+                    Nhận hỗ trợ Zalo
+                </a>
+            </div>
+             </nav>
+            <!-- User Profile -->
+            <div class="p-4 border-t border-gray-100/50">
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-[#FDEDED]/50 to-[#EDFFF0]/50">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[#F875AA] to-[#AEDEFC] flex items-center justify-center text-white font-semibold text-sm">
+                        JD
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-800 truncate">John Doe</p>
+                        <p class="text-xs text-gray-500 truncate">HR Manager</p>
+                    </div>
+                    <a href="login.html" class="text-gray-400 hover:text-[#F875AA] transition-colors">
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 ml-64 p-8">
+            <!-- Header -->
+            <div class="mb-8">
+                <h1 class="text-2xl font-semibold text-gray-800 tracking-tight">Cài đặt ⚙️</h1>
+                <p class="text-gray-500 text-sm mt-1">
+                    Quản lý thông tin cá nhân và cài đặt công ty của bạn.
+                </p>
+            </div>
+
+            <!-- Settings Layout -->
+            <div class="flex gap-6">
+                <!-- Settings Navigation -->
+                <div class="w-56 flex-shrink-0">
+                    <div class="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 overflow-hidden fade-up stagger-1">
+                        <nav class="p-2">
+                            <button onclick="showSection('profile')" id="nav-profile" class="settings-nav-item active w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left">
+                                <i data-lucide="user" class="w-4 h-4"></i>
+                                <span class="text-sm font-medium">
+                                    Thông tin cá nhân
+                                </span>
+                            </button>
+                            <button onclick="showSection('company')" id="nav-company" class="settings-nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 text-left hover:bg-gray-50">
+                                <i data-lucide="building" class="w-4 h-4"></i>
+                                <span class="text-sm font-medium">
+                                    Thông tin công ty
+                                </span>
+                            </button>
+                            <button onclick="showSection('security')" id="nav-security" class="settings-nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 text-left hover:bg-gray-50">
+                                <i data-lucide="shield" class="w-4 h-4"></i>
+                                <span class="text-sm font-medium">
+                                    Bảo mật & Đăng nhập
+                                </span>
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Settings Content -->
+                <div class="flex-1">
+                    <!-- Profile Section -->
+                    <div id="section-profile" class="space-y-6 fade-up stagger-2">
+                        <!-- Profile Card -->
+                        <div class="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 p-6">
+                            <h2 class="text-base font-semibold text-gray-800 mb-6">
+                                Thông tin cá nhân
+                            </h2>
+                            
+                            <div class="flex items-start gap-6 mb-6">
+                                <div class="relative">
+                                    <div id="profileAvatarImg" class="profile-avatar w-24 h-24 rounded-2xl bg-gradient-to-br from-[#F875AA] to-[#AEDEFC] flex items-center justify-center text-white font-semibold text-2xl overflow-hidden">
+                                        U
+                                    </div>
+                                    <button type="button" onclick="document.getElementById('avatarUpload').click()" class="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-white shadow-lg flex items-center justify-center text-gray-600 hover:text-[#F875AA] transition-colors">
+                                        <i data-lucide="camera" class="w-4 h-4"></i>
+                                    </button>
+                                    <input type="file" id="avatarUpload" accept="image/*" class="hidden">
+                                </div>
+                                <div class="flex-1">
+                                    <h3 id="profileName" class="text-lg font-semibold text-gray-800">Loading...</h3>
+                                    <p id="profileRole" class="text-sm text-gray-500">Employee</p>
+                                    <div class="mt-2 flex gap-2">
+                                        <button type="button" onclick="document.getElementById('avatarUpload').click()" class="text-xs px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#F875AA] to-[#AEDEFC] text-white hover:shadow-md transition-all">
+                                            Đổi avatar
+                                        </button>
+                                        <button type="button" id="removeAvatarBtn" onclick="removeAvatar()" class="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors">
+                                            Xoá avatar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <form id="profileForm">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="text-sm font-medium text-gray-700 mb-2 block">
+                                            Họ và tên đệm
+                                        </label>
+                                        <input type="text" name="first_name" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white focus:border-[#F875AA] focus:outline-none text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="text-sm font-medium text-gray-700 mb-2 block">
+                                            Tên
+                                        </label>
+                                        <input type="text" name="last_name" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white focus:border-[#F875AA] focus:outline-none text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="text-sm font-medium text-gray-700 mb-2 block">
+                                            Email
+                                        </label>
+                                        <input type="email" name="email" readonly class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-gray-50 focus:border-[#F875AA] focus:outline-none text-sm">
+                                        <p class="text-xs text-gray-500 mt-1">
+                                            Email không thể thay đổi.
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label class="text-sm font-medium text-gray-700 mb-2 block">
+                                            Số điện thoại
+                                        </label>
+                                        <input type="tel" name="phone" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white focus:border-[#F875AA] focus:outline-none text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="text-sm font-medium text-gray-700 mb-2 block">
+                                            Ngày sinh
+                                        </label>
+                                        <input type="date" name="date_of_birth" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white focus:border-[#F875AA] focus:outline-none text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="text-sm font-medium text-gray-700 mb-2 block">
+                                            Địa chỉ
+                                        </label>
+                                        <input type="text" name="address" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white focus:border-[#F875AA] focus:outline-none text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="text-sm font-medium text-gray-700 mb-2 block">Đường</label>
+                                        <input type="text" name="city" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white focus:border-[#F875AA] focus:outline-none text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="text-sm font-medium text-gray-700 mb-2 block">Phường</label>
+                                        <input type="text" name="state" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white focus:border-[#F875AA] focus:outline-none text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="text-sm font-medium text-gray-700 mb-2 block">Thành phố</label>
+                                        <input type="text" name="zip_code" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white focus:border-[#F875AA] focus:outline-none text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="text-sm font-medium text-gray-700 mb-2 block">Quốc tịch</label>
+                                        <input type="text" name="country" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white focus:border-[#F875AA] focus:outline-none text-sm">
+                                    </div>
+                                </div>
+
+                                <div class="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-100">
+                                    <button type="button" class="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium text-sm hover:bg-gray-50 transition-colors">
+                                        Huỷ
+                                    </button>
+                                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#F875AA] to-[#AEDEFC] text-white font-medium text-sm hover:shadow-lg transition-all">
+                                        Lưu thông tin
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Preferences -->
+                        <div class="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 p-6">
+                            <h2 class="text-base font-semibold text-gray-800 mb-6">
+                                Cài đặt hệ thống
+                            </h2>
+                            
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between p-4 rounded-xl bg-gray-50/50">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-800">Ngôn ngữ</p>
+                                        <p class="text-xs text-gray-500">Ngôn ngữ mặc định của hệ thống</p>
+                                    </div>
+                                    <div class="px-4 py-2 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-600">
+                                        Tiếng Việt
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between p-4 rounded-xl bg-gray-50/50">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-800">
+                                            Múi giờ
+                                        </p>
+                                        <p class="text-xs text-gray-500">
+                                            Múi giờ hiển thị cho tất cả người dùng
+                                        </p>
+                                    </div>
+                                    <div class="px-4 py-2 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-600">
+                                        UTC+07:00 (Bangkok, Hanoi, Jakarta)
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between p-4 rounded-xl bg-gray-50/50">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-800">Định dạng ngày</p>
+                                        <p class="text-xs text-gray-500">Định dạng hiển thị ngày tháng</p>
+                                    </div>
+                                    <div class="px-4 py-2 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-600">
+                                        Tháng/Ngày/Năm (MM/DD/YYYY)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Company Section -->
+                    <div id="section-company" class="space-y-6 hidden">
+                        <div class="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 p-6">
+                            <h2 class="text-base font-semibold text-gray-800 mb-6">
+                                Thông tin công ty
+                            </h2>
+                            
+                            <div class="flex items-start gap-6 mb-6">
+                                <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#F875AA] to-[#AEDEFC] flex items-center justify-center shadow-lg">
+                                    <span class="text-white font-bold text-xl tracking-tighter">TPM</span>
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="text-lg font-semibold text-gray-800">Thiên Phú Mút</h3>
+                                    <p class="text-sm text-gray-500">
+                                        Quản lý thông tin công ty của bạn như tên, ngành nghề, địa chỉ và website.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-sm font-medium text-gray-700 mb-2 block">
+                                        Tên công ty
+                                    </label>
+                                    <input type="text" value="Thiên Phú Mút" readonly class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-gray-50 focus:border-[#F875AA] focus:outline-none text-sm">
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-gray-700 mb-2 block">
+                                        Mảng công ty
+                                    </label>
+                                    <input type="text" id="companyIndustry" value="Technology" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white focus:border-[#F875AA] focus:outline-none text-sm">
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-gray-700 mb-2 block">
+                                        Quy mô công ty
+                                    </label>
+                                    <div class="relative">
+                                        <select id="companySize" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white focus:border-[#F875AA] focus:outline-none text-sm appearance-none cursor-pointer">
+                                            <option>1-50 nhân viên</option>
+                                            <option>51-200 nhân viên</option>
+                                            <option>201-500 nhân viên</option>
+                                            <option>501+ nhân viên</option>
+                                        </select>
+                                        <i data-lucide="chevron-down" class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-gray-700 mb-2 block">Website</label>
+                                    <input type="url" id="companyWebsite" value="https://thienphumut.vn" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white focus:border-[#F875AA] focus:outline-none text-sm">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="text-sm font-medium text-gray-700 mb-2 block">
+                                        Địa chỉ công ty
+                                    </label>
+                                    <input type="text" id="companyAddress" value="123 Business Ave, Suite 100, San Francisco, CA 94105" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white focus:border-[#F875AA] focus:outline-none text-sm">
+                                </div>
+                            </div>
+
+                            <!-- Save Button -->
+                            <div class="mt-6">
+                                <button type="button" id="saveCompanyBtn" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#F875AA] to-[#AEDEFC] text-white font-medium text-sm hover:shadow-lg transition-all">
+                                    Lưu thay đổi
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Company Section -->
+                    <div id="section-notifications" class="space-y-6 hidden">
+                        <div class="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 p-6">
+                            <h2 class="text-base font-semibold text-gray-800 mb-6">
+                                Thông báo Email
+                            </h2>
+                            
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between p-4 rounded-xl bg-gray-50/50">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-800">
+                                            Đơn xin nghỉ phép mới
+                                        </p>
+                                        <p class="text-xs text-gray-500">
+                                            Thông báo khi có đơn xin nghỉ phép mới
+                                        </p>
+                                    </div>
+                                    <button onclick="toggleSwitch(this)" class="toggle-switch active w-12 h-7 rounded-full bg-gray-200 relative cursor-pointer">
+                                        <span class="toggle-dot absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow-sm"></span>
+                                    </button>
+                                </div>
+
+                                <div class="flex items-center justify-between p-4 rounded-xl bg-gray-50/50">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-800">
+                                            Hợp đồng sắp hết hạn
+                                        </p>
+                                        <p class="text-xs text-gray-500">
+                                            Cảnh báo khi hợp đồng nhân viên sắp hết hạn
+                                        </p>
+                                    </div>
+                                    <button onclick="toggleSwitch(this)" class="toggle-switch active w-12 h-7 rounded-full bg-gray-200 relative cursor-pointer">
+                                        <span class="toggle-dot absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow-sm"></span>
+                                    </button>
+                                </div>
+
+                                <div class="flex items-center justify-between p-4 rounded-xl bg-gray-50/50">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-800">
+                                            Nhân viên mới được onboard
+                                        </p>
+                                        <p class="text-xs text-gray-500">
+                                            Thông báo khi có nhân viên mới gia nhập công ty
+                                        </p>
+                                    </div>
+                                    <button onclick="toggleSwitch(this)" class="toggle-switch active w-12 h-7 rounded-full bg-gray-200 relative cursor-pointer">
+                                        <span class="toggle-dot absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow-sm"></span>
+                                    </button>
+                                </div>
+
+                                <div class="flex items-center justify-between p-4 rounded-xl bg-gray-50/50">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-800">
+                                            Báo cáo hoạt động HR hàng tuần
+                                        </p>
+                                        <p class="text-xs text-gray-500">
+                                            Nhận báo cáo tổng quan về hoạt động HR hàng tuần
+                                        </p>
+                                    </div>
+                                    <button onclick="toggleSwitch(this)" class="toggle-switch w-12 h-7 rounded-full bg-gray-200 relative cursor-pointer">
+                                        <span class="toggle-dot absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow-sm"></span>
+                                    </button>
+                                </div>
+
+                                <div class="flex items-center justify-between p-4 rounded-xl bg-gray-50/50">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-800">
+                                            Nhắc sinh nhật nhân viên
+                                        </p>
+                                        <p class="text-xs text-gray-500">
+                                            Nhận nhắc nhở về sinh nhật nhân viên trong tháng
+                                        </p>
+                                    </div>
+                                    <button onclick="toggleSwitch(this)" class="toggle-switch active w-12 h-7 rounded-full bg-gray-200 relative cursor-pointer">
+                                        <span class="toggle-dot absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow-sm"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 p-6">
+                            <h2 class="text-base font-semibold text-gray-800 mb-6">
+                                Thông báo Ứng dụng
+                            </h2>
+                            
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between p-4 rounded-xl bg-gray-50/50">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-800">
+                                            Thông báo trình duyệt
+                                        </p>
+                                        <p class="text-xs text-gray-500">
+                                            Nhận thông báo qua trình duyệt khi có cập nhật mới
+                                        </p>
+                                    </div>
+                                    <button onclick="toggleSwitch(this)" class="toggle-switch active w-12 h-7 rounded-full bg-gray-200 relative cursor-pointer">
+                                        <span class="toggle-dot absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow-sm"></span>
+                                    </button>
+                                </div>
+
+                                <div class="flex items-center justify-between p-4 rounded-xl bg-gray-50/50">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-800">
+                                            Thông báo di động
+                                        </p>
+                                        <p class="text-xs text-gray-500">
+                                            Nhận thông báo qua ứng dụng di động khi có cập nhật mới
+                                        </p>
+                                    </div>
+                                    <button onclick="toggleSwitch(this)" class="toggle-switch w-12 h-7 rounded-full bg-gray-200 relative cursor-pointer">
+                                        <span class="toggle-dot absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow-sm"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security Section -->
+                    <div id="section-security" class="space-y-6 hidden">
+                        <div class="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 p-6">
+                            <h2 class="text-base font-semibold text-gray-800 mb-6">
+                                Đổi mật khẩu
+                            </h2>
+
+                            <form id="passwordForm" class="space-y-4 max-w-md">
+                                <div>
+                                    <label class="text-sm font-medium text-gray-700 mb-2 block">
+                                        Mật khẩu hiện tại
+                                    </label>
+                                    <div class="relative">
+                                        <input type="password" id="currentPassword" name="current_password" required placeholder="Nhập mật khẩu hiện tại" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white focus:border-[#F875AA] focus:outline-none text-sm pr-12">
+                                        <button type="button" onclick="togglePasswordVisibility('currentPassword')" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                            <i data-lucide="eye" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-gray-700 mb-2 block">
+                                        Mật khẩu mới
+                                    </label>
+                                    <div class="relative">
+                                        <input type="password" id="newPassword" name="new_password" required placeholder="Nhập mật khẩu mới" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white focus:border-[#F875AA] focus:outline-none text-sm pr-12">
+                                        <button type="button" onclick="togglePasswordVisibility('newPassword')" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                            <i data-lucide="eye" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số.
+                                    </p>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-gray-700 mb-2 block">
+                                        Xác nhận mật khẩu mới
+                                    </label>
+                                    <div class="relative">
+                                        <input type="password" id="confirmPassword" name="confirm_password" required placeholder="Nhập lại mật khẩu mới một lần nữa" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white focus:border-[#F875AA] focus:outline-none text-sm pr-12">
+                                        <button type="button" onclick="togglePasswordVisibility('confirmPassword')" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                            <i data-lucide="eye" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <button type="submit" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#F875AA] to-[#AEDEFC] text-white font-medium text-sm hover:shadow-lg transition-all">
+                                    Cập nhật mật khẩu
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+               <!-- Bottom Bar -->
+                <div class="border-t border-[#F875AA]/10 bg-gradient-to-r from-[#FDEDED]/30 via-white/50 to-[#EDFFF0]/30 px-8 lg:px-12 py-6">
+                    <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                        <!-- Copyright -->
+                        <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+                            <p class="text-sm text-gray-500">© 2025 ThienPhuMut. Bản quyền thuộc về Đoàn Nguyễn Minh Đăng - IT trực thuộc công ty TNHH Thiên Phú Mút.</p>
+                            <div class="flex items-center gap-4">
+                                <a href="#" class="text-xs text-gray-400 hover:text-[#F875AA] transition-colors">Chính sách bảo mật</a>
+                                <span class="text-gray-300">•</span>
+                                <a href="#" class="text-xs text-gray-400 hover:text-[#F875AA] transition-colors">Điều khoản dịch vụ</a>
+                                <span class="text-gray-300">•</span>
+                                <a href="#" class="text-xs text-gray-400 hover:text-[#F875AA] transition-colors">Cookies</a>
+                            </div>
+                        </div>
+
+                        <!-- Social Icons -->
+                        <div class="flex items-center gap-3">
+                            <a href="#" class="social-icon w-10 h-10 rounded-xl bg-white/80 border border-gray-100 flex items-center justify-center hover:border-[#F875AA]/30 hover:bg-gradient-to-br hover:from-[#F875AA]/10 hover:to-[#AEDEFC]/10 hover:shadow-lg">
+                                <i data-lucide="facebook" class="w-4 h-4 text-gray-500"></i>
+                            </a>
+                            <a href="#" class="social-icon w-10 h-10 rounded-xl bg-white/80 border border-gray-100 flex items-center justify-center hover:border-[#F875AA]/30 hover:bg-gradient-to-br hover:from-[#F875AA]/10 hover:to-[#AEDEFC]/10 hover:shadow-lg">
+                                <i data-lucide="linkedin" class="w-4 h-4 text-gray-500"></i>
+                            </a>
+                          
+                            <a href="#" class="social-icon w-10 h-10 rounded-xl bg-white/80 border border-gray-100 flex items-center justify-center hover:border-[#F875AA]/30 hover:bg-gradient-to-br hover:from-[#F875AA]/10 hover:to-[#AEDEFC]/10 hover:shadow-lg">
+                                <i data-lucide="instagram" class="w-4 h-4 text-gray-500"></i>
+                            </a>
+                            <a href="#" class="social-icon w-10 h-10 rounded-xl bg-white/80 border border-gray-100 flex items-center justify-center hover:border-[#F875AA]/30 hover:bg-gradient-to-br hover:from-[#F875AA]/10 hover:to-[#AEDEFC]/10 hover:shadow-lg">
+                                <i data-lucide="youtube" class="w-4 h-4 text-gray-500"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+        </main>
+    </div>
+
+
+    <script>
+        lucide.createIcons();
+        
+        function showSection(section) {
+            const sections = ['profile', 'company', 'security'];
+            
+            sections.forEach(s => {
+                const sectionEl = document.getElementById('section-' + s);
+                const navEl = document.getElementById('nav-' + s);
+                
+                if (s === section) {
+                    sectionEl.classList.remove('hidden');
+                    navEl.classList.add('active');
+                    navEl.classList.remove('text-gray-600');
+                } else {
+                    sectionEl.classList.add('hidden');
+                    navEl.classList.remove('active');
+                    navEl.classList.add('text-gray-600');
+                }
+            });
+            
+            lucide.createIcons();
+        }
+    </script>
+    <script src="/js/settings.js"></script>
+
+</body></html>
