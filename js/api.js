@@ -213,6 +213,14 @@ class APIService {
         return this.delete(API_ENDPOINTS.DEPARTMENT_DETAIL(id));
     }
 
+    async addEmployeeToDepartment(departmentId, employeeId) {
+        return this.post(`${API_ENDPOINTS.DEPARTMENTS}/${departmentId}/employees`, { employee_id: employeeId });
+    }
+
+    async removeEmployeeFromDepartment(departmentId, employeeId) {
+        return this.delete(`${API_ENDPOINTS.DEPARTMENTS}/${departmentId}/employees/${employeeId}`);
+    }
+
     // ==================== LEAVE ENDPOINTS ====================
     async getLeaves(params = {}) {
         return this.get(API_ENDPOINTS.LEAVES, params);

@@ -294,11 +294,18 @@ function showDepartmentDetailModal(department) {
                         </div>
                     </div>
 
-                    ${department.employees && department.employees.length > 0 ? `
-                        <div>
-                            <p class="text-sm text-gray-500 mb-3">Team Members (${department.employees.length})</p>
-                            <div class="grid grid-cols-2 gap-3">
-                                ${department.employees.slice(0, 8).map((emp, index) => {
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <p class="text-sm text-gray-500">Team Members ${department.employees && department.employees.length > 0 ? `(${department.employees.length})` : ''}</p>
+                            <button onclick="openAddEmployeeToDepartmentModal(${department.id})" class="px-3 py-1.5 bg-gradient-to-r from-[#F875AA] to-[#AEDEFC] text-white rounded-lg text-xs font-medium hover:shadow-lg transition-all flex items-center gap-1">
+                                <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+                                Thêm nhân viên
+                            </button>
+                        </div>
+
+                        ${department.employees && department.employees.length > 0 ? `
+                            <div class="space-y-2 max-h-96 overflow-y-auto">
+                                ${department.employees.map((emp, index) => {
                                     const initials = `${emp.first_name[0]}${emp.last_name[0]}`;
 
                                     console.log(`🎨 Rendering team member ${index + 1}: ${emp.first_name} ${emp.last_name}`);
@@ -315,23 +322,29 @@ function showDepartmentDetailModal(department) {
                                     }
 
                                     return `
-                                        <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50">
-                                            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#AEDEFC] to-[#EDFFF0] overflow-hidden">
+                                        <div class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 border border-gray-100">
+                                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[#AEDEFC] to-[#EDFFF0] overflow-hidden">
                                                 ${avatarHTML}
                                             </div>
                                             <div class="flex-1 min-w-0">
                                                 <p class="text-sm font-medium text-gray-800 truncate">${emp.first_name} ${emp.last_name}</p>
                                                 <p class="text-xs text-gray-500 truncate">${emp.job_title || 'Employee'}</p>
                                             </div>
+                                            <button onclick="removeEmployeeFromDepartment(${department.id}, ${emp.id}, '${emp.first_name} ${emp.last_name}')" class="px-3 py-1.5 text-red-500 hover:bg-red-50 rounded-lg text-xs font-medium transition-all flex items-center gap-1">
+                                                <i data-lucide="user-minus" class="w-3.5 h-3.5"></i>
+                                                Xoá
+                                            </button>
                                         </div>
                                     `;
                                 }).join('')}
                             </div>
-                            ${department.employees.length > 8 ? `
-                                <p class="text-sm text-gray-500 mt-2 text-center">+${department.employees.length - 8} more employees</p>
-                            ` : ''}
-                        </div>
-                    ` : ''}
+                        ` : `
+                            <div class="text-center py-8 bg-gray-50 rounded-xl">
+                                <i data-lucide="users" class="w-12 h-12 text-gray-300 mx-auto mb-2"></i>
+                                <p class="text-sm text-gray-500">Chưa có nhân viên trong phòng ban này</p>
+                            </div>
+                        `}
+                    </div>
                 </div>
             </div>
 
@@ -546,6 +559,137 @@ async function handleAddDepartment(event) {
     }
 }
 
+// Open add employee to department modal
+async function openAddEmployeeToDepartmentModal(departmentId) {
+    const modal = document.createElement('div');
+    modal.id = 'addEmployeeModal';
+    modal.className = 'fixed inset-0 z-[60] flex items-center justify-center p-4';
+
+    modal.innerHTML = `
+        <div class="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" onclick="closeAddEmployeeModal()"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-800">Thêm nhân viên vào phòng ban</h3>
+                    <button onclick="closeAddEmployeeModal()" class="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center">
+                        <i data-lucide="x" class="w-4 h-4 text-gray-500"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="px-6 py-4">
+                <p class="text-sm text-gray-500 mb-3">Chọn nhân viên để thêm vào phòng ban</p>
+                <select id="employeeSelectForDept" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white focus:border-[#F875AA] focus:outline-none text-sm">
+                    <option value="">Đang tải...</option>
+                </select>
+            </div>
+
+            <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex gap-2">
+                <button onclick="closeAddEmployeeModal()" class="flex-1 px-4 py-2 border-2 border-gray-200 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-50 transition-all">
+                    Huỷ
+                </button>
+                <button onclick="confirmAddEmployee(${departmentId})" class="flex-1 px-4 py-2 bg-gradient-to-r from-[#F875AA] to-[#AEDEFC] text-white rounded-xl text-sm font-medium hover:shadow-lg transition-all">
+                    Thêm
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+    lucide.createIcons();
+
+    // Load available employees (those not in this department)
+    await loadAvailableEmployees(departmentId);
+}
+
+// Close add employee modal
+function closeAddEmployeeModal() {
+    const modal = document.getElementById('addEmployeeModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Load available employees
+async function loadAvailableEmployees(departmentId) {
+    try {
+        const response = await api.getEmployees();
+        if (response.success) {
+            const dept = window.currentDepartment;
+            const deptEmployeeIds = dept.employees ? dept.employees.map(e => e.id) : [];
+
+            // Filter out employees already in this department
+            const availableEmployees = response.data.filter(emp => !deptEmployeeIds.includes(emp.id));
+
+            const select = document.getElementById('employeeSelectForDept');
+            if (availableEmployees.length === 0) {
+                select.innerHTML = '<option value="">Không có nhân viên khả dụng</option>';
+            } else {
+                select.innerHTML = '<option value="">-- Chọn nhân viên --</option>' +
+                    availableEmployees.map(emp =>
+                        `<option value="${emp.id}">${emp.first_name} ${emp.last_name} - ${emp.job_title || 'Employee'}</option>`
+                    ).join('');
+            }
+        }
+    } catch (error) {
+        console.error('Failed to load employees:', error);
+        showError('Không thể tải danh sách nhân viên');
+    }
+}
+
+// Confirm add employee
+async function confirmAddEmployee(departmentId) {
+    const select = document.getElementById('employeeSelectForDept');
+    const employeeId = select.value;
+
+    if (!employeeId) {
+        showError('Vui lòng chọn nhân viên');
+        return;
+    }
+
+    try {
+        showLoading();
+
+        const response = await api.addEmployeeToDepartment(departmentId, parseInt(employeeId));
+
+        if (response.success) {
+            hideLoading();
+            showSuccess('Đã thêm nhân viên vào phòng ban thành công!');
+            closeAddEmployeeModal();
+            closeDepartmentDetailModal();
+            await loadDepartments();
+        }
+    } catch (error) {
+        hideLoading();
+        console.error('Failed to add employee:', error);
+        showError(error.message || 'Không thể thêm nhân viên vào phòng ban');
+    }
+}
+
+// Remove employee from department
+async function removeEmployeeFromDepartment(departmentId, employeeId, employeeName) {
+    if (!confirm(`Bạn có chắc chắn muốn xoá "${employeeName}" khỏi phòng ban này không?`)) {
+        return;
+    }
+
+    try {
+        showLoading();
+
+        const response = await api.removeEmployeeFromDepartment(departmentId, employeeId);
+
+        if (response.success) {
+            hideLoading();
+            showSuccess('Đã xoá nhân viên khỏi phòng ban thành công!');
+            closeDepartmentDetailModal();
+            await loadDepartments();
+        }
+    } catch (error) {
+        hideLoading();
+        console.error('Failed to remove employee:', error);
+        showError(error.message || 'Không thể xoá nhân viên khỏi phòng ban');
+    }
+}
+
 // Initialize departments page
 document.addEventListener('DOMContentLoaded', function() {
     loadDepartments();
@@ -556,6 +700,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.key === 'Escape') {
             closeAddDepartmentModal();
             closeDepartmentDetailModal();
+            closeAddEmployeeModal();
         }
     });
 });
