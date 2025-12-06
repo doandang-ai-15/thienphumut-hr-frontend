@@ -1,0 +1,357 @@
+<html lang="vi"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gửi Bảng Lương - PeopleHub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/js/config.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-fade-in { animation: fadeInUp 0.6s ease-out forwards; }
+        .animate-slide-in { animation: slideIn 0.5s ease-out forwards; }
+        .animate-pulse-soft { animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .animate-spin { animation: spin 1s linear infinite; }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(248, 117, 170, 0.15); }
+        .stat-card { transition: all 0.3s ease; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); }
+        .nav-item { transition: all 0.2s ease; }
+        .nav-item:hover { background: linear-gradient(135deg, #F875AA20, #AEDEFC30); transform: translateX(4px); }
+        .upload-zone { transition: all 0.3s ease; }
+        .upload-zone:hover { border-color: #F875AA; background: linear-gradient(135deg, #F875AA08, #AEDEFC08); }
+        .upload-zone.dragover { border-color: #F875AA; background: linear-gradient(135deg, #F875AA15, #AEDEFC15); transform: scale(1.02); }
+        .footer-link { transition: all 0.2s ease; }
+        .footer-link:hover { color: #F875AA; transform: translateX(4px); }
+        .social-icon { transition: all 0.3s ease; }
+        .social-icon:hover { transform: translateY(-4px) scale(1.1); }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-[#FDEDED] via-white to-[#EDFFF0] min-h-screen">
+    <div class="flex min-h-screen">
+        <!-- Thanh bên -->
+        <aside class="w-64 bg-white/80 backdrop-blur-xl border-r border-[#F875AA]/20 p-6 hidden lg:block" style="animation: slideIn 0.4s ease-out">
+            <div class="flex items-center gap-3 mb-10">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F875AA] to-[#AEDEFC] flex items-center justify-center">
+                    <span class="text-white font-bold text-lg tracking-tighter">HR</span>
+                </div>
+                <span class="font-semibold text-gray-800 tracking-tight">Thiên Phú Mút</span>
+            </div>
+            
+            <nav class="space-y-2">
+                <a href="index.html" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:text-[#F875AA]">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span class="text-sm">Bảng tổng quát</span>
+                </a>
+                <a href="employees.html" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:text-[#F875AA]">
+                    <i data-lucide="users" class="w-5 h-5"></i>
+                    <span class="text-sm">Nhân viên</span>
+                </a>
+                <a href="departments.html" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:text-[#F875AA]">
+                    <i data-lucide="briefcase" class="w-5 h-5"></i>
+                    <span class="text-sm">Phòng ban</span>
+                </a>
+                <a href="leaveApplications.html" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:text-[#F875AA]">
+                    <i data-lucide="calendar-days" class="w-5 h-5"></i>
+                    <span class="text-sm">Đơn xin nghỉ phép</span>
+                </a>
+                <a href="contracts.html" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:text-[#F875AA]">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span class="text-sm">Hợp đồng</span>
+                </a>
+                <a href="sendPayroll.html" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-[#F875AA]/20 to-[#AEDEFC]/20 text-[#F875AA] font-medium">
+                    <i data-lucide="send" class="w-5 h-5"></i>
+                    <span class="text-sm">Gửi bảng lương</span>
+                </a>
+                <a href="settings.html" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:text-[#F875AA]">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
+                    <span class="text-sm">Cài đặt tổng</span>
+                </a>
+
+                <div class="mt-10 p-4 rounded-2xl bg-gradient-to-br from-[#F875AA]/10 to-[#AEDEFC]/10 border border-[#F875AA]/20">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#F875AA] to-[#AEDEFC] flex items-center justify-center mb-3">
+                        <i data-lucide="sparkles" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <p class="text-sm font-medium text-gray-800 mb-1">Xảy ra lỗi?</p>
+                    <p class="text-xs text-gray-500 mb-3">Nếu trong quá trình sử dụng gặp bất kỳ trục trặc nào, vui lòng thông báo hỗ trợ ngay.</p>
+                    <a href="https://zalo.me/0835911358" target="_blank" class="w-full py-2 rounded-lg bg-[#F875AA] text-white text-xs font-medium hover:bg-[#e5649a] transition-colors inline-block text-center">
+                        Nhận hỗ trợ Zalo
+                    </a>
+                </div>
+      
+            </nav>
+         
+        </aside>
+
+        <!-- Nội dung chính -->
+        <main class="flex-1 p-4 lg:p-8 overflow-auto">
+            <!-- Tiêu đề -->
+            <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 animate-fade-in">
+                <div>
+                    <h1 class="text-2xl lg:text-3xl font-semibold text-gray-800 tracking-tight">Gửi Bảng Lương 💰</h1>
+                    <p class="text-gray-500 text-sm mt-1">Tải lên và xử lý bảng lương nhân viên hiệu quả</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <!-- <button class="p-2 rounded-xl bg-white/80 border border-gray-100 hover:border-[#F875AA]/30 transition-all hover:shadow-lg">
+                        <i data-lucide="bell" class="w-5 h-5 text-gray-500"></i>
+                    </button> -->
+                    <!-- <div class="flex items-center gap-3 px-4 py-2 rounded-xl bg-white/80 border border-gray-100">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#F875AA] to-[#AEDEFC]"></div>
+                        <span class="text-sm font-medium text-gray-700 hidden sm:block">Nguyễn Thị Lan</span>
+                    </div> -->
+                </div>
+            </header>
+
+            <!-- Thống kê Email -->
+            <div class="max-w-4xl mx-auto mb-8 animate-fade-in" style="animation-delay: 0.05s">
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Mail đã gửi hôm nay -->
+                    <div class="stat-card bg-white/80 backdrop-blur-sm rounded-2xl p-5 border border-[#F875AA]/10">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F875AA]/20 to-[#F875AA]/10 flex items-center justify-center">
+                                <i data-lucide="calendar-check" class="w-5 h-5 text-[#F875AA]"></i>
+                            </div>
+                            <span class="text-xs text-gray-400 font-medium">Hôm nay</span>
+                        </div>
+                        <p id="mailsToday" class="text-2xl font-semibold text-gray-800 tracking-tight">0</p>
+                        <p class="text-xs text-gray-500 mt-1">Mail đã gửi hôm nay</p>
+                    </div>
+
+                    <!-- Mail đã gửi tháng này -->
+                    <div class="stat-card bg-white/80 backdrop-blur-sm rounded-2xl p-5 border border-[#AEDEFC]/20">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#AEDEFC]/30 to-[#AEDEFC]/10 flex items-center justify-center">
+                                <i data-lucide="calendar-range" class="w-5 h-5 text-[#7BC4F0]"></i>
+                            </div>
+                            <span class="text-xs text-gray-400 font-medium">Tháng này</span>
+                        </div>
+                        <p id="mailsThisMonth" class="text-2xl font-semibold text-gray-800 tracking-tight">0</p>
+                        <p class="text-xs text-gray-500 mt-1">Mail đã gửi tháng này</p>
+                    </div>
+
+                    <!-- Mail đang gửi -->
+                    <div class="stat-card bg-white/80 backdrop-blur-sm rounded-2xl p-5 border border-orange-200/50">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-100 to-orange-50 flex items-center justify-center">
+                                <i data-lucide="loader-2" class="w-5 h-5 text-orange-500" id="sendingIcon"></i>
+                            </div>
+                            <div id="sendingIndicator" class="hidden flex items-center gap-1">
+                                <span class="w-2 h-2 rounded-full bg-orange-400 animate-pulse-soft"></span>
+                                <span class="text-xs text-orange-500 font-medium">Đang gửi</span>
+                            </div>
+                        </div>
+                        <p id="mailsSending" class="text-2xl font-semibold text-gray-800 tracking-tight">0</p>
+                        <p class="text-xs text-gray-500 mt-1">Mail đang gửi</p>
+                    </div>
+
+                    <!-- Mail gửi thành công -->
+                    <div class="stat-card bg-white/80 backdrop-blur-sm rounded-2xl p-5 border border-green-200/50">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-green-100 to-green-50 flex items-center justify-center">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-green-500"></i>
+                            </div>
+                            <span class="text-xs text-green-500 font-medium">Thành công</span>
+                        </div>
+                        <p id="mailsSuccess" class="text-2xl font-semibold text-gray-800 tracking-tight">0</p>
+                        <p class="text-xs text-gray-500 mt-1">Mail gửi thành công</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nội dung bảng lương chính -->
+            <div class="max-w-4xl mx-auto space-y-8">
+                <!-- Phần tìm kiếm -->
+                <div class="card-hover bg-white/80 backdrop-blur-sm rounded-2xl p-6 lg:p-8 border border-[#F875AA]/10 animate-fade-in" style="animation-delay: 0.1s">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F875AA]/20 to-[#AEDEFC]/20 flex items-center justify-center">
+                            <i data-lucide="search" class="w-5 h-5 text-[#F875AA]"></i>
+                        </div>
+                        <div>
+                            <h2 class="font-semibold text-gray-800 tracking-tight">Tìm kiếm nhân viên</h2>
+                            <p class="text-sm text-gray-500">Tìm nhân viên theo tên để quản lý bảng lương</p>
+                        </div>
+                    </div>
+                    
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                            <i data-lucide="search" class="w-6 h-6 text-gray-400"></i>
+                        </div>
+                        <input type="text" id="employeeSearch" placeholder="Tìm kiếm tên nhân viên..." class="w-full pl-14 pr-6 py-5 text-base rounded-2xl bg-gradient-to-r from-[#FDEDED]/30 to-[#EDFFF0]/30 border-2 border-gray-100 focus:border-[#F875AA] focus:ring-4 focus:ring-[#F875AA]/10 outline-none transition-all placeholder:text-gray-400">
+                        <div class="absolute inset-y-0 right-4 flex items-center">
+                            <kbd class="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 text-xs text-gray-400 bg-white rounded-lg border border-gray-200">
+                                <span>⌘</span>K
+                            </kbd>
+                        </div>
+                    </div>
+                    
+                    <!-- Kết quả tìm kiếm (ẩn mặc định) -->
+                    <div id="searchResults" class="hidden mt-4 bg-white rounded-xl border border-gray-100 shadow-lg overflow-hidden max-h-96 overflow-y-auto">
+                        <div id="searchResultsContent" class="p-2 space-y-1">
+                            <!-- Results will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Selected employee display -->
+                    <div id="selectedEmployeeDisplay" class="hidden mt-4 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center">
+                                    <i data-lucide="check" class="w-5 h-5 text-white"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-800" id="selectedEmployeeName"></p>
+                                    <p class="text-xs text-gray-500" id="selectedEmployeeEmail"></p>
+                                </div>
+                            </div>
+                            <button onclick="clearSelectedEmployee()" class="p-2 rounded-lg hover:bg-white/80 transition-colors">
+                                <i data-lucide="x" class="w-5 h-5 text-gray-400 hover:text-red-500"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phần tải lên tệp -->
+                <div class="card-hover bg-white/80 backdrop-blur-sm rounded-2xl p-6 lg:p-8 border border-[#AEDEFC]/30 animate-fade-in" style="animation-delay: 0.2s">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#AEDEFC]/30 to-[#EDFFF0]/30 flex items-center justify-center">
+                            <i data-lucide="file-spreadsheet" class="w-5 h-5 text-[#7BC4F0]"></i>
+                        </div>
+                        <div>
+                            <h2 class="font-semibold text-gray-800 tracking-tight">Tải lên tệp bảng lương</h2>
+                            <p class="text-sm text-gray-500">Nhập dữ liệu bảng lương nhân viên từ tệp Excel</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Vùng tải lên -->
+                    <div id="uploadZone" class="upload-zone relative border-2 border-dashed border-gray-200 rounded-2xl p-10 lg:p-14 text-center cursor-pointer">
+                        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                        
+                        <div class="flex flex-col items-center">
+                            <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#F875AA]/10 via-[#AEDEFC]/10 to-[#EDFFF0]/10 flex items-center justify-center mb-5">
+                                <i data-lucide="upload-cloud" class="w-10 h-10 text-[#F875AA]"></i>
+                            </div>
+                            <p class="text-lg font-medium text-gray-700 mb-2">Kéo và thả tệp Excel của bạn vào đây</p>
+                            <p class="text-sm text-gray-500 mb-4">hoặc nhấp để duyệt từ máy tính của bạn</p>
+                            <div class="flex items-center gap-2 text-xs text-gray-400">
+                                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                                <span>Định dạng hỗ trợ: .xlsx, .xls, .csv</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Xem trước tệp (ẩn mặc định) -->
+                    <div id="filePreview" class="hidden mt-6">
+                        <div class="flex items-center justify-between p-4 bg-gradient-to-r from-[#EDFFF0]/50 to-[#AEDEFC]/20 rounded-xl border border-green-200">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-sm">
+                                    <i data-lucide="file-check" class="w-6 h-6 text-green-500"></i>
+                                </div>
+                                <div>
+                                    <p id="fileName" class="text-sm font-medium text-gray-800">bangluong_thang12_2024.xlsx</p>
+                                    <p id="fileSize" class="text-xs text-gray-500">245 KB • Sẵn sàng tải lên</p>
+                                </div>
+                            </div>
+                            <button id="removeFile" class="p-2 rounded-lg hover:bg-white/80 transition-colors">
+                                <i data-lucide="x" class="w-5 h-5 text-gray-400 hover:text-red-500"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phần nút tải lên -->
+                <div class="animate-fade-in" style="animation-delay: 0.3s">
+                    <button id="uploadButton" class="w-full py-5 rounded-2xl bg-gradient-to-r from-[#F875AA] to-[#AEDEFC] text-white font-semibold text-base tracking-tight hover:shadow-xl hover:shadow-[#F875AA]/30 transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3">
+                        <i data-lucide="upload" class="w-5 h-5"></i>
+                        Tải lên bảng lương nhân viên
+                    </button>
+                    
+                    <p class="text-center text-xs text-gray-400 mt-4">
+                        Bằng việc tải lên, bạn xác nhận rằng dữ liệu bảng lương là chính xác và được phê duyệt để xử lý
+                    </p>
+                </div>
+
+                <!-- Thẻ thông tin -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in" style="animation-delay: 0.4s">
+                    <div class="bg-white/60 backdrop-blur-sm rounded-xl p-5 border border-[#F875AA]/10">
+                        <div class="w-10 h-10 rounded-lg bg-[#FDEDED] flex items-center justify-center mb-3">
+                            <i data-lucide="shield-check" class="w-5 h-5 text-[#F875AA]"></i>
+                        </div>
+                        <p class="text-sm font-medium text-gray-800 mb-1">Tải lên an toàn</p>
+                        <p class="text-xs text-gray-500">Dữ liệu của bạn được mã hóa và bảo vệ</p>
+                    </div>
+                    
+                    <div class="bg-white/60 backdrop-blur-sm rounded-xl p-5 border border-[#AEDEFC]/20">
+                        <div class="w-10 h-10 rounded-lg bg-[#AEDEFC]/20 flex items-center justify-center mb-3">
+                            <i data-lucide="zap" class="w-5 h-5 text-[#7BC4F0]"></i>
+                        </div>
+                        <p class="text-sm font-medium text-gray-800 mb-1">Xử lý nhanh chóng</p>
+                        <p class="text-xs text-gray-500">Bảng lương được xử lý trong vài phút</p>
+                    </div>
+                    
+                    <div class="bg-white/60 backdrop-blur-sm rounded-xl p-5 border border-[#EDFFF0]">
+                        <div class="w-10 h-10 rounded-lg bg-[#EDFFF0] flex items-center justify-center mb-3">
+                            <i data-lucide="check-circle" class="w-5 h-5 text-green-500"></i>
+                        </div>
+                        <p class="text-sm font-medium text-gray-800 mb-1">Xác thực tự động</p>
+                        <p class="text-xs text-gray-500">Dữ liệu được kiểm tra trước khi xử lý</p>
+                    </div>
+                </div>
+            </div>
+
+
+                <div class="border-t border-[#F875AA]/10 bg-gradient-to-r from-[#FDEDED]/30 via-white/50 to-[#EDFFF0]/30 px-8 lg:px-12 py-6">
+                    <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                        <!-- Copyright -->
+                        <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+                            <p class="text-sm text-gray-500">© 2025 ThienPhuMut. Bản quyền thuộc về Đoàn Nguyễn Minh Đăng - IT trực thuộc công ty TNHH Thiên Phú Mút.</p>
+                            <div class="flex items-center gap-4">
+                                <a href="#" class="text-xs text-gray-400 hover:text-[#F875AA] transition-colors">Chính sách bảo mật</a>
+                                <span class="text-gray-300">•</span>
+                                <a href="#" class="text-xs text-gray-400 hover:text-[#F875AA] transition-colors">Điều khoản dịch vụ</a>
+                                <span class="text-gray-300">•</span>
+                                <a href="#" class="text-xs text-gray-400 hover:text-[#F875AA] transition-colors">Cookies</a>
+                            </div>
+                        </div>
+
+                        <!-- Social Icons -->
+                        <div class="flex items-center gap-3">
+                            <a href="#" class="social-icon w-10 h-10 rounded-xl bg-white/80 border border-gray-100 flex items-center justify-center hover:border-[#F875AA]/30 hover:bg-gradient-to-br hover:from-[#F875AA]/10 hover:to-[#AEDEFC]/10 hover:shadow-lg">
+                                <i data-lucide="facebook" class="w-4 h-4 text-gray-500"></i>
+                            </a>
+                            <a href="#" class="social-icon w-10 h-10 rounded-xl bg-white/80 border border-gray-100 flex items-center justify-center hover:border-[#F875AA]/30 hover:bg-gradient-to-br hover:from-[#F875AA]/10 hover:to-[#AEDEFC]/10 hover:shadow-lg">
+                                <i data-lucide="linkedin" class="w-4 h-4 text-gray-500"></i>
+                            </a>
+                          
+                            <a href="#" class="social-icon w-10 h-10 rounded-xl bg-white/80 border border-gray-100 flex items-center justify-center hover:border-[#F875AA]/30 hover:bg-gradient-to-br hover:from-[#F875AA]/10 hover:to-[#AEDEFC]/10 hover:shadow-lg">
+                                <i data-lucide="instagram" class="w-4 h-4 text-gray-500"></i>
+                            </a>
+                            <a href="#" class="social-icon w-10 h-10 rounded-xl bg-white/80 border border-gray-100 flex items-center justify-center hover:border-[#F875AA]/30 hover:bg-gradient-to-br hover:from-[#F875AA]/10 hover:to-[#AEDEFC]/10 hover:shadow-lg">
+                                <i data-lucide="youtube" class="w-4 h-4 text-gray-500"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+        </main>
+    </div>
+
+    <script src="/js/sendPayroll.js"></script>
+
+</body></html>

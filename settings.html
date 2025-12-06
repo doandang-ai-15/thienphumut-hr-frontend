@@ -144,6 +144,12 @@
                         Hợp đồng
                     </span>
                 </a>
+                <a href="sendPayroll.html" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-[#FDEDED]/50">
+                    <i data-lucide="send" class="w-5 h-5"></i>
+                    <span class="text-sm font-medium">
+                        Gửi bảng lương
+                    </span>
+                </a>
                 <a href="settings.html" class="sidebar-item active flex items-center gap-3 px-4 py-3 rounded-xl text-[#F875AA]">
                     <i data-lucide="settings" class="w-5 h-5"></i>
                     <span class="text-sm font-medium">
@@ -211,6 +217,18 @@
                                 <i data-lucide="shield" class="w-4 h-4"></i>
                                 <span class="text-sm font-medium">
                                     Bảo mật & Đăng nhập
+                                </span>
+                            </button>
+                            <button onclick="showSection('gmail')" id="nav-gmail" class="settings-nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 text-left hover:bg-gray-50">
+                                <i data-lucide="mail" class="w-4 h-4"></i>
+                                <span class="text-sm font-medium">
+                                    Chỉnh sửa cài đặt gmail
+                                </span>
+                            </button>
+                            <button onclick="showSection('activity')" id="nav-activity" class="settings-nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 text-left hover:bg-gray-50">
+                                <i data-lucide="history" class="w-4 h-4"></i>
+                                <span class="text-sm font-medium">
+                                    Lịch sử đăng nhập
                                 </span>
                             </button>
                         </nav>
@@ -599,6 +617,109 @@
                             </form>
                         </div>
                     </div>
+
+                    <!-- Gmail Configuration Section -->
+                    <div id="section-gmail" class="space-y-6 hidden">
+                        <div class="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 p-6">
+                            <h2 class="text-base font-semibold text-gray-800 mb-6">
+                                Cấu hình Gmail
+                            </h2>
+
+                            <form id="gmailConfigForm" class="space-y-4 max-w-md">
+                                <div>
+                                    <label class="text-sm font-medium text-gray-700 mb-2 block">
+                                        Email gửi
+                                    </label>
+                                    <input type="email" id="senderEmail" name="sender_email" required placeholder="Ví dụ: dangdnm.ti.1720@gmail.com" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white focus:border-[#F875AA] focus:outline-none text-sm">
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        Email sẽ được sử dụng để gửi bảng lương.
+                                    </p>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-gray-700 mb-2 block">
+                                        SMTP Server
+                                    </label>
+                                    <input type="text" id="smtpServer" name="smtp_server" required placeholder="Ví dụ: smtp.gmail.com" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white focus:border-[#F875AA] focus:outline-none text-sm">
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-gray-700 mb-2 block">
+                                        SMTP Port
+                                    </label>
+                                    <input type="number" id="smtpPort" name="smtp_port" required placeholder="Ví dụ: 587" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white focus:border-[#F875AA] focus:outline-none text-sm">
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-gray-700 mb-2 block">
+                                        Mật khẩu ứng dụng
+                                    </label>
+                                    <div class="relative">
+                                        <input type="password" id="appPassword" name="app_password" required placeholder="Nhập App Password của Gmail" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-white focus:border-[#F875AA] focus:outline-none text-sm pr-12">
+                                        <button type="button" onclick="togglePasswordVisibility('appPassword')" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                            <i data-lucide="eye" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        Sử dụng App Password từ cài đặt bảo mật Google của bạn.
+                                    </p>
+                                </div>
+                                <button type="submit" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#F875AA] to-[#AEDEFC] text-white font-medium text-sm hover:shadow-lg transition-all">
+                                    Lưu cấu hình
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Activity Logs Section -->
+                    <div id="section-activity" class="space-y-6 hidden">
+                        <div class="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <div>
+                                    <h2 class="text-base font-semibold text-gray-800">
+                                        Lịch sử hoạt động
+                                    </h2>
+                                    <p class="text-sm text-gray-500 mt-1">
+                                        Theo dõi các hoạt động đăng nhập và thao tác trong hệ thống
+                                    </p>
+                                </div>
+                                <button onclick="loadActivityLogs()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-[#F875AA]/10 to-[#AEDEFC]/10 text-[#F875AA] text-sm font-medium hover:shadow-lg transition-all flex items-center gap-2">
+                                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                                    Làm mới
+                                </button>
+                            </div>
+
+                            <!-- Filter Options -->
+                            <div class="flex gap-3 mb-6">
+                                <select id="activityFilter" onchange="filterActivityLogs()" class="px-4 py-2 rounded-xl border-2 border-gray-100 bg-white focus:border-[#F875AA] focus:outline-none text-sm">
+                                    <option value="all">Tất cả hoạt động</option>
+                                    <option value="login">Đăng nhập</option>
+                                    <option value="logout">Đăng xuất</option>
+                                    <option value="create">Tạo mới</option>
+                                    <option value="update">Cập nhật</option>
+                                    <option value="delete">Xoá</option>
+                                </select>
+                            </div>
+
+                            <!-- Loading State -->
+                            <div id="activityLoading" class="hidden flex items-center justify-center py-12">
+                                <div class="flex flex-col items-center gap-3">
+                                    <div class="w-12 h-12 border-4 border-[#F875AA]/20 border-t-[#F875AA] rounded-full animate-spin"></div>
+                                    <p class="text-sm text-gray-500">Đang tải lịch sử...</p>
+                                </div>
+                            </div>
+
+                            <!-- Activity Logs List -->
+                            <div id="activityLogsList" class="space-y-3">
+                                <!-- Logs will be populated here -->
+                            </div>
+
+                            <!-- Empty State -->
+                            <div id="activityEmpty" class="hidden text-center py-12">
+                                <div class="w-16 h-16 rounded-full bg-gray-100 mx-auto mb-4 flex items-center justify-center">
+                                    <i data-lucide="inbox" class="w-8 h-8 text-gray-400"></i>
+                                </div>
+                                <p class="text-gray-500 text-sm">Chưa có lịch sử hoạt động nào</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
                <!-- Bottom Bar -->
@@ -642,12 +763,12 @@
         lucide.createIcons();
         
         function showSection(section) {
-            const sections = ['profile', 'company', 'security'];
-            
+            const sections = ['profile', 'company', 'security', 'gmail'];
+
             sections.forEach(s => {
                 const sectionEl = document.getElementById('section-' + s);
                 const navEl = document.getElementById('nav-' + s);
-                
+
                 if (s === section) {
                     sectionEl.classList.remove('hidden');
                     navEl.classList.add('active');
@@ -658,7 +779,7 @@
                     navEl.classList.add('text-gray-600');
                 }
             });
-            
+
             lucide.createIcons();
         }
     </script>

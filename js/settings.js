@@ -156,10 +156,13 @@ async function handlePasswordChange(event) {
     }
 }
 
+// Global variable to store all activity logs
+let allActivityLogs = [];
+
 // Show/Hide sections
 function showSection(sectionName) {
     // Hide all sections
-    const sections = ['profile', 'company', 'security'];
+    const sections = ['profile', 'company', 'security', 'gmail', 'activity'];
     sections.forEach(section => {
         const el = document.getElementById(`section-${section}`);
         if (el) {
@@ -183,6 +186,169 @@ function showSection(sectionName) {
     const activeSection = document.getElementById(`section-${sectionName}`);
     if (activeSection) {
         activeSection.style.display = 'block';
+    }
+
+    // Load activity logs when activity section is shown
+    if (sectionName === 'activity') {
+        loadActivityLogs();
+    }
+}
+
+// Load activity logs from API
+async function loadActivityLogs() {
+    console.log('📊 [ACTIVITY LOGS] Loading activity logs...');
+
+    const loadingEl = document.getElementById('activityLoading');
+    const listEl = document.getElementById('activityLogsList');
+    const emptyEl = document.getElementById('activityEmpty');
+
+    console.log('📊 [ACTIVITY LOGS] Elements found:', {
+        loadingEl: !!loadingEl,
+        listEl: !!listEl,
+        emptyEl: !!emptyEl
+    });
+
+    try {
+        // Show loading state
+        loadingEl.classList.remove('hidden');
+        listEl.classList.add('hidden');
+        emptyEl.classList.add('hidden');
+
+        console.log('📊 [ACTIVITY LOGS] Calling API...');
+
+        // Fetch activity logs from API
+        const response = await api.getActivityLogs();
+
+        console.log('📊 [ACTIVITY LOGS] API Response:', response);
+        console.log('📊 [ACTIVITY LOGS] Response data:', response.data);
+        console.log('📊 [ACTIVITY LOGS] Data length:', response.data?.length);
+
+        if (response.success && response.data) {
+            allActivityLogs = response.data;
+
+            console.log('✅ [ACTIVITY LOGS] Loaded', allActivityLogs.length, 'logs');
+
+            // Hide loading
+            loadingEl.classList.add('hidden');
+
+            // Filter and display logs
+            filterActivityLogs();
+        } else {
+            console.error('❌ [ACTIVITY LOGS] Response not successful:', response);
+            throw new Error('Failed to load activity logs');
+        }
+    } catch (error) {
+        console.error('❌ [ACTIVITY LOGS] Error loading logs:', error);
+        console.error('❌ [ACTIVITY LOGS] Error stack:', error.stack);
+        loadingEl.classList.add('hidden');
+        emptyEl.classList.remove('hidden');
+        listEl.classList.add('hidden');
+    }
+}
+
+// Filter activity logs based on selected filter
+function filterActivityLogs() {
+    console.log('🔍 [FILTER] Filtering logs...');
+
+    const filter = document.getElementById('activityFilter').value;
+    const listEl = document.getElementById('activityLogsList');
+    const emptyEl = document.getElementById('activityEmpty');
+
+    console.log('🔍 [FILTER] Filter value:', filter);
+    console.log('🔍 [FILTER] Total logs:', allActivityLogs.length);
+
+    let filteredLogs = allActivityLogs;
+
+    // Apply filter
+    if (filter !== 'all') {
+        filteredLogs = allActivityLogs.filter(log => log.action.toLowerCase().includes(filter.toLowerCase()));
+        console.log('🔍 [FILTER] Filtered logs:', filteredLogs.length);
+    }
+
+    // Display logs
+    if (filteredLogs.length === 0) {
+        console.log('📭 [FILTER] No logs to display - showing empty state');
+        listEl.classList.add('hidden');
+        emptyEl.classList.remove('hidden');
+    } else {
+        console.log('📋 [FILTER] Displaying', filteredLogs.length, 'logs');
+        listEl.classList.remove('hidden');
+        emptyEl.classList.add('hidden');
+        renderActivityLogs(filteredLogs);
+    }
+}
+
+// Render activity logs in UI
+function renderActivityLogs(logs) {
+    console.log('🎨 [RENDER] Rendering', logs.length, 'logs');
+
+    const listEl = document.getElementById('activityLogsList');
+
+    if (!listEl) {
+        console.error('❌ [RENDER] List element not found!');
+        return;
+    }
+
+    console.log('🎨 [RENDER] First log:', logs[0]);
+
+    listEl.innerHTML = logs.map((log, index) => {
+        console.log(`🎨 [RENDER] Processing log ${index + 1}:`, log);
+        const date = new Date(log.created_at);
+        const formattedDate = date.toLocaleDateString('vi-VN', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        // Determine icon and color based on action
+        let icon = 'activity';
+        let iconColor = 'text-gray-500';
+        let bgColor = 'from-gray-100 to-gray-50';
+
+        if (log.action.toLowerCase().includes('login')) {
+            icon = 'log-in';
+            iconColor = 'text-green-500';
+            bgColor = 'from-green-100 to-green-50';
+        } else if (log.action.toLowerCase().includes('logout')) {
+            icon = 'log-out';
+            iconColor = 'text-orange-500';
+            bgColor = 'from-orange-100 to-orange-50';
+        } else if (log.action.toLowerCase().includes('create')) {
+            icon = 'plus-circle';
+            iconColor = 'text-blue-500';
+            bgColor = 'from-blue-100 to-blue-50';
+        } else if (log.action.toLowerCase().includes('update')) {
+            icon = 'edit';
+            iconColor = 'text-[#AEDEFC]';
+            bgColor = 'from-[#AEDEFC]/20 to-[#AEDEFC]/10';
+        } else if (log.action.toLowerCase().includes('delete')) {
+            icon = 'trash-2';
+            iconColor = 'text-red-500';
+            bgColor = 'from-red-100 to-red-50';
+        }
+
+        return `
+            <div class="flex items-start gap-4 p-4 rounded-xl border border-gray-100 hover:shadow-md transition-all bg-white">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br ${bgColor} flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="${icon}" class="w-5 h-5 ${iconColor}"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-800">${log.action}</p>
+                    <p class="text-xs text-gray-500 mt-1">${log.description || 'Không có mô tả'}</p>
+                    <div class="flex items-center gap-2 mt-2">
+                        <span class="text-xs text-gray-400">${formattedDate}</span>
+                        ${log.employee_id ? `<span class="text-xs text-gray-300">•</span><span class="text-xs text-gray-400">ID: ${log.employee_id}</span>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // Re-render lucide icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
     }
 }
 
@@ -309,6 +475,59 @@ async function saveCompanyInfo() {
     }
 }
 
+// Handle Gmail configuration save
+async function handleGmailConfigSave(event) {
+    event.preventDefault();
+
+    const form = event.target;
+    const formData = new FormData(form);
+
+    const gmailConfig = {
+        senderEmail: formData.get('sender_email'),
+        smtpServer: formData.get('smtp_server'),
+        smtpPort: formData.get('smtp_port'),
+        appPassword: formData.get('app_password')
+    };
+
+    try {
+        showLoading();
+
+        // Save to localStorage
+        localStorage.setItem('gmailConfig', JSON.stringify(gmailConfig));
+
+        // Set global start_email variable
+        window.start_email = gmailConfig.senderEmail;
+
+        hideLoading();
+        showSuccess('Cấu hình Gmail đã được lưu thành công!');
+    } catch (error) {
+        hideLoading();
+        console.error('Failed to save Gmail config:', error);
+        showError(error.message || 'Không thể lưu cấu hình Gmail');
+    }
+}
+
+// Load Gmail configuration
+function loadGmailConfig() {
+    const savedConfig = localStorage.getItem('gmailConfig');
+    if (savedConfig) {
+        try {
+            const config = JSON.parse(savedConfig);
+
+            // Populate form fields
+            if (config.senderEmail) document.getElementById('senderEmail').value = config.senderEmail;
+            if (config.smtpServer) document.getElementById('smtpServer').value = config.smtpServer;
+            if (config.smtpPort) document.getElementById('smtpPort').value = config.smtpPort;
+            if (config.appPassword) document.getElementById('appPassword').value = config.appPassword;
+
+            // Set global start_email variable
+            window.start_email = config.senderEmail;
+        } catch (e) {
+            console.error('Failed to load Gmail config:', e);
+        }
+    }
+}
+
 // Initialize settings page
 document.addEventListener('DOMContentLoaded', function() {
     loadUserProfile();
@@ -361,4 +580,13 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Failed to load company info:', e);
         }
     }
+
+    // Setup Gmail configuration form handler
+    const gmailConfigForm = document.getElementById('gmailConfigForm');
+    if (gmailConfigForm) {
+        gmailConfigForm.addEventListener('submit', handleGmailConfigSave);
+    }
+
+    // Load Gmail configuration
+    loadGmailConfig();
 });

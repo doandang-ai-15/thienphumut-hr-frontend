@@ -11,6 +11,7 @@ async function handleLogin(event) {
 
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
+    const rememberMe = document.getElementById('rememberMe').checked;
 
     const btn = document.getElementById('loginBtn');
     const btnText = document.getElementById('loginBtnText');
@@ -26,6 +27,18 @@ async function handleLogin(event) {
         const response = await api.login(email, password);
 
         if (response.success) {
+            // Handle remember me functionality
+            if (rememberMe) {
+                // Save credentials to localStorage
+                localStorage.setItem('rememberedCredentials', JSON.stringify({
+                    email: email,
+                    password: password
+                }));
+            } else {
+                // Clear saved credentials
+                localStorage.removeItem('rememberedCredentials');
+            }
+
             // Show success message
             showSuccessMessage('Login successful! Redirecting to dashboard...');
 
