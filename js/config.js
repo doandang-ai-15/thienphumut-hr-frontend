@@ -3,7 +3,7 @@ const API_CONFIG = {
     // Tự động phát hiện môi trường
     BASE_URL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
         ? 'http://localhost:5000/api'  // Development
-        : 'thienphumut-hr-backend.vercel.app/api',  // Production - Backend Vercel URL
+        : 'http://thienphumut-hr-backend.vercel.app/api',  // Production - Backend Vercel URL
     TIMEOUT: 30000,
 };
 
