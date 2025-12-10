@@ -728,6 +728,7 @@ function closeEditEmployeeModal() {
 
 // Global variable for edit modal photo
 let editUploadedPhoto = null;
+let editUploadedPhotoFile = null;
 
 // Setup photo upload for edit modal
 function setupEditPhotoUpload() {
@@ -754,9 +755,13 @@ function handleEditPhotoUpload(file) {
         return;
     }
 
+    // Store file for later upload to Cloudinary
+    editUploadedPhotoFile = file;
+
+    // Create preview (base64 only for UI, not for upload)
     const reader = new FileReader();
     reader.onload = function(e) {
-        editUploadedPhoto = e.target.result;
+        const previewUrl = e.target.result;
 
         const previewAvatar = document.getElementById('editPreviewAvatar');
         const previewIcon = document.getElementById('editPreviewIcon');
@@ -768,7 +773,7 @@ function handleEditPhotoUpload(file) {
 
             previewAvatar.style.borderStyle = 'solid';
             previewAvatar.style.padding = '0';
-            previewAvatar.innerHTML = `<img src="${editUploadedPhoto}" alt="Preview" class="w-full h-full object-cover rounded-full">`;
+            previewAvatar.innerHTML = `<img src="${previewUrl}" alt="Preview" class="w-full h-full object-cover rounded-full">`;
         }
     };
     reader.readAsDataURL(file);
@@ -777,9 +782,28 @@ function handleEditPhotoUpload(file) {
 // Handle update employee
 async function handleUpdateEmployee() {
     try {
+        showLoading();
+
         const form = document.getElementById('editEmployeeForm');
         const formData = new FormData(form);
 
+        // Step 1: Upload photo to Cloudinary if user selected new photo
+        let photoPath = null;
+        if (editUploadedPhotoFile) {
+            console.log('📤 Uploading photo to Cloudinary...');
+            try {
+                const uploadResult = await uploadPhotoFile(editUploadedPhotoFile);
+                photoPath = uploadResult.path; // This is Cloudinary URL
+                console.log('✅ Photo uploaded to Cloudinary:', photoPath);
+            } catch (error) {
+                hideLoading();
+                console.error('Failed to upload photo:', error);
+                showError('Failed to upload photo: ' + error.message);
+                return;
+            }
+        }
+
+        // Step 2: Prepare employee data
         const employeeData = {
             first_name: formData.get('first_name'),
             last_name: formData.get('last_name'),
@@ -802,20 +826,25 @@ async function handleUpdateEmployee() {
             role: formData.get('role')
         };
 
-        // Include photo if changed
-        if (editUploadedPhoto) {
-            employeeData.photo = editUploadedPhoto;
+        // Include photo URL from Cloudinary if uploaded
+        if (photoPath) {
+            employeeData.photo = photoPath;
+            console.log('📷 Updating employee with Cloudinary photo URL:', photoPath);
         }
 
+        // Step 3: Update employee in database
         const employeeId = formData.get('id');
-
-        showLoading();
         const response = await api.updateEmployee(employeeId, employeeData);
 
         if (response.success) {
             hideLoading();
             showSuccess('Cập nhật thông tin nhân viên thành công!');
             closeEditEmployeeModal();
+
+            // Reset upload variables
+            editUploadedPhoto = null;
+            editUploadedPhotoFile = null;
+
             await loadEmployees();
         }
     } catch (error) {
