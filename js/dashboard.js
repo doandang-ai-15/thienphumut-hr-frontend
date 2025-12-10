@@ -330,9 +330,10 @@ function updateTopPerformers(employees) {
         let avatarHTML;
         if (emp.photo) {
             console.log(`   ✅ Using photo for ${emp.first_name}`);
+            const photoUrl = getPhotoUrl(emp.photo);
             avatarHTML = `
                 <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#F875AA] to-[#AEDEFC] p-0.5">
-                    <img src="${emp.photo}" alt="${emp.first_name} ${emp.last_name}"
+                    <img src="${photoUrl}" alt="${emp.first_name} ${emp.last_name}"
                          class="w-full h-full rounded-full object-cover bg-white"
                          onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-full h-full rounded-full bg-white flex items-center justify-center\\'><span class=\\'text-sm font-medium text-gray-600\\'>${initials}</span></div>';">
                 </div>

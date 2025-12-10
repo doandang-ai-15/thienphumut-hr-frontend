@@ -78,12 +78,11 @@ function renderEmployees(employees) {
         const gradient = gradients[index % gradients.length];
 
         // Build avatar HTML - use photo if exists, otherwise show initials (like settings page)
-        let avatarContent;
-        if (emp.photo) {
-            avatarContent = `<img src="${emp.photo}" alt="${emp.first_name} ${emp.last_name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-full h-full rounded-full bg-[#FDEDED] flex items-center justify-center text-2xl font-semibold text-[#F875AA]\\'>${initials}</div>';">`;
-        } else {
-            avatarContent = `<div class="w-full h-full rounded-full bg-[#FDEDED] flex items-center justify-center text-2xl font-semibold text-[#F875AA]">${initials}</div>`;
-        }
+        let avatarContent = generateAvatarHtml({
+            photo: emp.photo,
+            firstName: emp.first_name,
+            lastName: emp.last_name
+        });
 
         return `
             <div class="employee-card bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/50 text-center cursor-pointer transition-all duration-300 fade-up stagger-${(index % 6) + 1} relative group">
@@ -353,40 +352,47 @@ async function handleAddEmployee(event) {
     const form = event.target;
     const formData = new FormData(form);
 
-    console.log('📤 Form submission - uploadedPhoto status:', uploadedPhoto ? 'HAS PHOTO' : 'NO PHOTO');
-    if (uploadedPhoto) {
-        console.log('📷 Photo length:', uploadedPhoto.length);
-        console.log('📷 Photo preview (first 100 chars):', uploadedPhoto.substring(0, 100));
-    }
-
-    const employeeData = {
-        first_name: formData.get('first_name'),
-        last_name: formData.get('last_name'),
-        email: formData.get('email'),
-        phone: formData.get('phone'),
-        date_of_birth: formData.get('date_of_birth'),
-        gender: formData.get('gender'),
-        job_title: formData.get('job_title'),
-        department_id: formData.get('department') ? parseInt(formData.get('department')) : null,
-        employment_type: formData.get('employment_type'),
-        start_date: formData.get('start_date'),
-        salary: formData.get('salary') ? parseFloat(formData.get('salary')) : null,
-        pay_frequency: formData.get('pay_frequency'),
-        address: formData.get('address'),
-        city: formData.get('city'),
-        state: formData.get('state'),
-        zip_code: formData.get('zip_code'),
-        country: formData.get('country'),
-        photo: uploadedPhoto // Include uploaded photo
-    };
-
-    console.log('📋 Employee data to be sent:', {
-        ...employeeData,
-        photo: employeeData.photo ? `[BASE64 DATA - ${employeeData.photo.length} chars]` : null
-    });
+    console.log('📤 Form submission - uploadedPhotoFile status:', uploadedPhotoFile ? 'HAS PHOTO' : 'NO PHOTO');
 
     try {
         showLoading();
+
+        // Step 1: Upload photo if exists
+        let photoPath = null;
+        if (uploadedPhotoFile) {
+            console.log('📤 Uploading photo first...');
+            const uploadResult = await uploadPhotoFile(uploadedPhotoFile);
+            photoPath = uploadResult.path;
+            console.log('✅ Photo uploaded:', photoPath);
+        }
+
+        // Step 2: Create employee with photo path
+        const employeeData = {
+            first_name: formData.get('first_name'),
+            last_name: formData.get('last_name'),
+            email: formData.get('email'),
+            phone: formData.get('phone'),
+            date_of_birth: formData.get('date_of_birth'),
+            gender: formData.get('gender'),
+            job_title: formData.get('job_title'),
+            department_id: formData.get('department') ? parseInt(formData.get('department')) : null,
+            employment_type: formData.get('employment_type'),
+            start_date: formData.get('start_date'),
+            salary: formData.get('salary') ? parseFloat(formData.get('salary')) : null,
+            pay_frequency: formData.get('pay_frequency'),
+            address: formData.get('address'),
+            city: formData.get('city'),
+            state: formData.get('state'),
+            zip_code: formData.get('zip_code'),
+            country: formData.get('country'),
+            photo: photoPath // Store photo path, not base64
+        };
+
+        console.log('📋 Employee data to be sent:', {
+            ...employeeData,
+            photo: employeeData.photo || 'NO PHOTO'
+        });
+
         const response = await api.createEmployee(employeeData);
 
         if (response.success) {
@@ -394,7 +400,8 @@ async function handleAddEmployee(event) {
             showSuccess('Employee added successfully!');
             closeAddEmployeeModal();
             form.reset();
-            uploadedPhoto = null; // Reset uploaded photo
+            uploadedPhoto = null;
+            uploadedPhotoFile = null; // Reset uploaded photo file
 
             // Reload employee list to show new employee immediately
             await loadEmployees();
@@ -408,9 +415,10 @@ async function handleAddEmployee(event) {
 
 // Global variable to store uploaded photo
 let uploadedPhoto = null;
+let uploadedPhotoFile = null;
 
 // Handle photo upload in modal
-function handlePhotoUpload(file) {
+async function handlePhotoUpload(file) {
     console.log('🖼️ handlePhotoUpload called with file:', file);
 
     if (!file) {
@@ -423,6 +431,9 @@ function handlePhotoUpload(file) {
         type: file.type,
         size: file.size
     });
+
+    // Store file for later upload
+    uploadedPhotoFile = file;
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
@@ -438,13 +449,13 @@ function handlePhotoUpload(file) {
         return;
     }
 
-    console.log('✅ File validation passed, converting to base64...');
+    console.log('✅ File validation passed, creating preview...');
 
-    // Convert to base64
+    // Create preview for UI
     const reader = new FileReader();
     reader.onload = function(e) {
-        uploadedPhoto = e.target.result;
-        console.log('✅ Photo converted to base64, length:', uploadedPhoto.length);
+        const previewUrl = e.target.result;
+        console.log('✅ Photo preview created');
 
         // Update UI to show preview - use the correct ID from modal
         const previewAvatar = document.getElementById('previewAvatar');
@@ -461,7 +472,7 @@ function handlePhotoUpload(file) {
             // Update the preview container to show the image
             previewAvatar.style.borderStyle = 'solid';
             previewAvatar.style.padding = '0';
-            previewAvatar.innerHTML = `<img src="${uploadedPhoto}" alt="Preview" class="w-full h-full object-cover rounded-full">`;
+            previewAvatar.innerHTML = `<img src="${previewUrl}" alt="Preview" class="w-full h-full object-cover rounded-full">`;
 
             console.log('✅ Photo preview updated successfully!');
         } else {

@@ -127,7 +127,8 @@ function renderContracts(contracts) {
         // Build avatar - use photo if exists, otherwise show initials
         let avatarHTML;
         if (contract.employee_photo) {
-            avatarHTML = `<img src="${contract.employee_photo}" alt="${employeeName}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center text-white text-sm font-semibold\\'>${employeeInitials}</div>';">`;
+            const photoUrl = getPhotoUrl(contract.employee_photo);
+            avatarHTML = `<img src="${photoUrl}" alt="${employeeName}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center text-white text-sm font-semibold\\'>${employeeInitials}</div>';">`;
         } else {
             avatarHTML = `<div class="w-full h-full flex items-center justify-center text-white text-sm font-semibold">${employeeInitials}</div>`;
         }
@@ -275,7 +276,7 @@ function showContractDetailModal(contract) {
                     <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
                         <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#F875AA] to-[#AEDEFC] overflow-hidden">
                             ${contract.employee_photo
-                                ? `<img src="${contract.employee_photo}" alt="${employeeName}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center text-white font-semibold\\'>${employeeInitials}</div>';">`
+                                ? `<img src="${getPhotoUrl(contract.employee_photo)}" alt="${employeeName}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center text-white font-semibold\\'>${employeeInitials}</div>';">`
                                 : `<div class="w-full h-full flex items-center justify-center text-white font-semibold">${employeeInitials}</div>`
                             }
                         </div>

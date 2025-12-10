@@ -136,7 +136,8 @@ function renderDepartments(departments) {
         // Build manager avatar HTML
         let managerAvatarHTML;
         if (dept.manager_photo) {
-            managerAvatarHTML = `<img src="${dept.manager_photo}" alt="${managerName}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center text-white text-xs font-semibold\\'>${managerInitials}</div>';">`;
+            const photoUrl = getPhotoUrl(dept.manager_photo);
+            managerAvatarHTML = `<img src="${photoUrl}" alt="${managerName}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center text-white text-xs font-semibold\\'>${managerInitials}</div>';">`;
         } else {
             managerAvatarHTML = `<div class="w-full h-full flex items-center justify-center text-white text-xs font-semibold">${managerInitials}</div>`;
         }
@@ -258,7 +259,7 @@ function showDepartmentDetailModal(department) {
                             <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
                                 <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#F875AA] to-[#AEDEFC] overflow-hidden">
                                     ${department.manager_photo
-                                        ? `<img src="${department.manager_photo}" alt="${managerName}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center text-white font-semibold\\'>${managerInitials}</div>';">`
+                                        ? `<img src="${getPhotoUrl(department.manager_photo)}" alt="${managerName}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center text-white font-semibold\\'>${managerInitials}</div>';">`
                                         : `<div class="w-full h-full flex items-center justify-center text-white font-semibold">${managerInitials}</div>`
                                     }
                                 </div>
@@ -315,7 +316,8 @@ function showDepartmentDetailModal(department) {
                                     let avatarHTML;
                                     if (emp.photo) {
                                         console.log(`   ✅ Using photo for ${emp.first_name}`);
-                                        avatarHTML = `<img src="${emp.photo}" alt="${emp.first_name} ${emp.last_name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center text-xs font-semibold\\'>${initials}</div>';">`;
+                                        const photoUrl = getPhotoUrl(emp.photo);
+                                        avatarHTML = `<img src="${photoUrl}" alt="${emp.first_name} ${emp.last_name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center text-xs font-semibold\\'>${initials}</div>';">`;
                                     } else {
                                         console.log(`   ℹ️ Using initials for ${emp.first_name} (no photo)`);
                                         avatarHTML = `<div class="w-full h-full flex items-center justify-center text-xs font-semibold">${initials}</div>`;

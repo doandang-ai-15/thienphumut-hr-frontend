@@ -25,6 +25,8 @@ const API_ENDPOINTS = {
     EMPLOYEE_DETAIL: (id) => `/employees/${id}`,
     TOP_PERFORMERS: '/employees/top/performers',
     EMPLOYEE_STATS: '/employees/statistics',
+    UPLOAD_PHOTO: '/employees/upload-photo',
+    DELETE_PHOTO: (filename) => `/employees/delete-photo/${filename}`,
 
     // Departments
     DEPARTMENTS: '/departments',

@@ -105,7 +105,8 @@ function renderLeaves(leaves) {
         // Build avatar - use photo if exists, otherwise show initials
         let avatarHTML;
         if (leave.employee_photo) {
-            avatarHTML = `<img src="${leave.employee_photo}" alt="${employeeName}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center text-white text-sm font-semibold\\'>${employeeInitials}</div>';">`;
+            const photoUrl = getPhotoUrl(leave.employee_photo);
+            avatarHTML = `<img src="${photoUrl}" alt="${employeeName}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center text-white text-sm font-semibold\\'>${employeeInitials}</div>';">`;
         } else {
             avatarHTML = `<div class="w-full h-full flex items-center justify-center text-white text-sm font-semibold">${employeeInitials}</div>`;
         }
@@ -246,7 +247,7 @@ function showLeaveDetailModal(leave) {
                     <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
                         <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#F875AA] to-[#AEDEFC] overflow-hidden">
                             ${leave.employee_photo
-                                ? `<img src="${leave.employee_photo}" alt="${employeeName}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center text-white font-semibold\\'>${employeeInitials}</div>';">`
+                                ? `<img src="${getPhotoUrl(leave.employee_photo)}" alt="${employeeName}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center text-white font-semibold\\'>${employeeInitials}</div>';">`
                                 : `<div class="w-full h-full flex items-center justify-center text-white font-semibold">${employeeInitials}</div>`
                             }
                         </div>
@@ -299,7 +300,7 @@ function showLeaveDetailModal(leave) {
                         <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
                             <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[#F875AA] to-[#AEDEFC] overflow-hidden">
                                 ${leave.approver_photo
-                                    ? `<img src="${leave.approver_photo}" alt="${leave.approver_first_name} ${leave.approver_last_name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center text-white text-sm font-semibold\\'>${leave.approver_first_name[0]}${leave.approver_last_name[0]}</div>';">`
+                                    ? `<img src="${getPhotoUrl(leave.approver_photo)}" alt="${leave.approver_first_name} ${leave.approver_last_name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center text-white text-sm font-semibold\\'>${leave.approver_first_name[0]}${leave.approver_last_name[0]}</div>';">`
                                     : `<div class="w-full h-full flex items-center justify-center text-white text-sm font-semibold">${leave.approver_first_name[0]}${leave.approver_last_name[0]}</div>`
                                 }
                             </div>

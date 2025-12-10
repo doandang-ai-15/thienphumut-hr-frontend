@@ -47,7 +47,8 @@ function populateProfileForm(user) {
     // Avatar - show photo if exists, otherwise show initials
     if (profileAvatarImg) {
         if (user.photo) {
-            profileAvatarImg.innerHTML = `<img src="${user.photo}" alt="Avatar" class="w-full h-full object-cover">`;
+            const photoUrl = getPhotoUrl(user.photo);
+            profileAvatarImg.innerHTML = `<img src="${photoUrl}" alt="Avatar" class="w-full h-full object-cover">`;
         } else {
             const initials = user.first_name && user.last_name
                 ? `${user.first_name[0]}${user.last_name[0]}`
@@ -379,42 +380,28 @@ function togglePasswordVisibility(inputId) {
 async function handleAvatarUpload(file) {
     if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-        showError('Please select an image file');
-        return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-        showError('Image size should be less than 5MB');
-        return;
-    }
-
     try {
         showLoading();
 
-        // Convert to base64
-        const reader = new FileReader();
-        reader.onload = async function(e) {
-            const base64Image = e.target.result;
+        // Upload photo to server
+        const uploadResult = await uploadPhotoFile(file);
+        const photoPath = uploadResult.path;
 
-            // Update avatar in database
-            const response = await api.updateEmployee(currentUser.id, {
-                photo: base64Image
-            });
+        // Update avatar in database
+        const response = await api.updateEmployee(currentUser.id, {
+            photo: photoPath
+        });
 
-            if (response.success) {
-                // Update UI
-                const avatarImg = document.getElementById('profileAvatarImg');
-                avatarImg.innerHTML = `<img src="${base64Image}" alt="Avatar" class="w-full h-full object-cover">`;
+        if (response.success) {
+            // Update UI
+            const photoUrl = getPhotoUrl(photoPath);
+            const avatarImg = document.getElementById('profileAvatarImg');
+            avatarImg.innerHTML = `<img src="${photoUrl}" alt="Avatar" class="w-full h-full object-cover">`;
 
-                currentUser.photo = base64Image;
-                hideLoading();
-                showSuccess('Avatar updated successfully!');
-            }
-        };
-        reader.readAsDataURL(file);
+            currentUser.photo = photoPath;
+            hideLoading();
+            showSuccess('Avatar updated successfully!');
+        }
     } catch (error) {
         hideLoading();
         console.error('Failed to upload avatar:', error);
