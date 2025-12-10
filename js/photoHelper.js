@@ -3,24 +3,30 @@
 
 /**
  * Get full photo URL from path
- * @param {string} photoPath - Relative path from database (e.g., 'assets/photos/employee-123.jpg')
+ * @param {string} photoPath - Path from database (can be: Cloudinary URL, relative path, or base64)
  * @returns {string} - Full URL to photo
  */
 function getPhotoUrl(photoPath) {
     if (!photoPath) return null;
 
-    // If already a full URL (http/https), return as is
+    // If already a full URL (http/https) - Cloudinary or other CDN
     if (photoPath.startsWith('http://') || photoPath.startsWith('https://')) {
         return photoPath;
     }
 
-    // If it's a data URL (base64), return as is (for backward compatibility)
+    // If it's a data URL (base64), return as is (for backward compatibility with old data)
     if (photoPath.startsWith('data:image/')) {
         return photoPath;
     }
 
-    // Build full URL from relative path
-    const baseUrl = API_CONFIG.BASE_URL.replace('/api', ''); // Remove /api suffix
+    // If it's a relative path (old local storage method)
+    if (photoPath.startsWith('assets/photos/')) {
+        const baseUrl = API_CONFIG.BASE_URL.replace('/api', '');
+        return `${baseUrl}/${photoPath}`;
+    }
+
+    // Default: assume it's a relative path
+    const baseUrl = API_CONFIG.BASE_URL.replace('/api', '');
     return `${baseUrl}/${photoPath}`;
 }
 
