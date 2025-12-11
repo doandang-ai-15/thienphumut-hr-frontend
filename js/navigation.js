@@ -1,5 +1,66 @@
 // Global Navigation Script
 
+// Mobile Menu Toggle
+function setupMobileMenu() {
+    // Create mobile menu button if it doesn't exist
+    const header = document.querySelector('header');
+    if (!header) return;
+
+    // Check if button already exists
+    if (document.getElementById('mobile-menu-btn')) return;
+
+    // Create hamburger button
+    const menuBtn = document.createElement('button');
+    menuBtn.id = 'mobile-menu-btn';
+    menuBtn.className = 'lg:hidden p-2 rounded-xl bg-white/80 border border-gray-100 hover:border-[#F875AA]/30 transition-all';
+    menuBtn.innerHTML = '<i data-lucide="menu" class="w-5 h-5 text-gray-600"></i>';
+
+    // Insert button at the start of header
+    const headerDiv = header.querySelector('div');
+    if (headerDiv) {
+        headerDiv.insertBefore(menuBtn, headerDiv.firstChild);
+    }
+
+    // Get sidebar
+    const sidebar = document.querySelector('aside');
+    if (!sidebar) return;
+
+    // Add mobile overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'mobile-menu-overlay';
+    overlay.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-40 hidden lg:hidden';
+    document.body.appendChild(overlay);
+
+    // Toggle sidebar function
+    function toggleSidebar() {
+        sidebar.classList.toggle('hidden');
+        sidebar.classList.toggle('fixed');
+        sidebar.classList.toggle('inset-y-0');
+        sidebar.classList.toggle('left-0');
+        sidebar.classList.toggle('z-50');
+        overlay.classList.toggle('hidden');
+    }
+
+    // Click handlers
+    menuBtn.addEventListener('click', toggleSidebar);
+    overlay.addEventListener('click', toggleSidebar);
+
+    // Close sidebar when clicking nav links on mobile
+    const navLinks = sidebar.querySelectorAll('nav a');
+    navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth < 1024) { // lg breakpoint
+                toggleSidebar();
+            }
+        });
+    });
+
+    // Re-initialize Lucide icons for the new button
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
 // Update user info in sidebar
 async function updateSidebarUser() {
     try {
@@ -101,6 +162,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!publicPages.includes(currentPage)) {
         // Add loading spinner
         addLoadingSpinner();
+
+        // Setup mobile menu
+        setupMobileMenu();
 
         // Update sidebar user
         updateSidebarUser();
