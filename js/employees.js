@@ -293,6 +293,8 @@ function setupModalFormHandler() {
 
     // Setup photo upload
     const photoInput = document.getElementById('photoInput');
+    const previewAvatar = document.getElementById('previewAvatar');
+
     if (photoInput) {
         console.log('✅ Photo input found, attaching listener...');
         photoInput.addEventListener('change', function(e) {
@@ -308,6 +310,92 @@ function setupModalFormHandler() {
     } else {
         console.error('❌ Photo input not found!');
     }
+
+    // Setup paste from clipboard
+    if (previewAvatar) {
+        console.log('✅ Preview avatar found, setting up clipboard paste...');
+
+        // Make avatar focusable and show hint
+        previewAvatar.setAttribute('tabindex', '0');
+        previewAvatar.style.outline = 'none';
+
+        // Add visual feedback when focused
+        previewAvatar.addEventListener('focus', function() {
+            this.style.borderColor = '#F875AA';
+            this.style.borderWidth = '3px';
+            console.log('📋 Avatar focused - ready for paste (Ctrl+V or Win+V)');
+        });
+
+        previewAvatar.addEventListener('blur', function() {
+            this.style.borderColor = '';
+            this.style.borderWidth = '2px';
+        });
+
+        // Handle paste event
+        previewAvatar.addEventListener('paste', async function(e) {
+            console.log('📋 Paste event detected!');
+            e.preventDefault();
+
+            const items = e.clipboardData.items;
+            console.log('📋 Clipboard items:', items.length);
+
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                console.log('📋 Item type:', item.type);
+
+                // Check if item is an image
+                if (item.type.indexOf('image') !== -1) {
+                    console.log('✅ Image found in clipboard!');
+                    const file = item.getAsFile();
+
+                    if (file) {
+                        console.log('📁 Pasted file:', file.name, file.size, 'bytes');
+                        handlePhotoUpload(file);
+                        showSuccess('Ảnh đã được paste từ clipboard!');
+                        return;
+                    }
+                }
+            }
+
+            console.log('⚠️ No image found in clipboard');
+            showError('Không tìm thấy hình ảnh trong clipboard. Vui lòng copy một hình ảnh và thử lại.');
+        });
+
+        console.log('✅ Clipboard paste setup complete');
+    }
+
+    // Also setup paste for the whole document (as fallback)
+    document.addEventListener('paste', async function(e) {
+        // Only handle if modal is open and no other input is focused
+        const modal = document.getElementById('addEmployeeModal');
+        const activeElement = document.activeElement;
+
+        if (modal && !modal.classList.contains('hidden')) {
+            // Don't intercept if user is typing in an input field
+            if (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA') {
+                return;
+            }
+
+            console.log('📋 Document paste event (modal open)');
+            const items = e.clipboardData.items;
+
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+
+                if (item.type.indexOf('image') !== -1) {
+                    e.preventDefault();
+                    console.log('✅ Image pasted in document!');
+                    const file = item.getAsFile();
+
+                    if (file) {
+                        handlePhotoUpload(file);
+                        showSuccess('Ảnh đã được paste từ clipboard!');
+                        return;
+                    }
+                }
+            }
+        }
+    });
 }
 
 // Close Add Employee Modal
@@ -733,12 +821,60 @@ let editUploadedPhotoFile = null;
 // Setup photo upload for edit modal
 function setupEditPhotoUpload() {
     const photoInput = document.getElementById('editPhotoInput');
+    const editPreviewAvatar = document.getElementById('editPreviewAvatar');
+
     if (photoInput) {
         photoInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
                 handleEditPhotoUpload(file);
             }
+        });
+    }
+
+    // Setup paste from clipboard for edit modal
+    if (editPreviewAvatar) {
+        console.log('✅ Edit preview avatar found, setting up clipboard paste...');
+
+        // Make avatar focusable
+        editPreviewAvatar.setAttribute('tabindex', '0');
+        editPreviewAvatar.style.outline = 'none';
+
+        // Add visual feedback when focused
+        editPreviewAvatar.addEventListener('focus', function() {
+            this.style.borderColor = '#F875AA';
+            this.style.borderWidth = '3px';
+            console.log('📋 Edit avatar focused - ready for paste');
+        });
+
+        editPreviewAvatar.addEventListener('blur', function() {
+            this.style.borderColor = '';
+            this.style.borderWidth = '2px';
+        });
+
+        // Handle paste event
+        editPreviewAvatar.addEventListener('paste', async function(e) {
+            console.log('📋 Paste event in edit modal!');
+            e.preventDefault();
+
+            const items = e.clipboardData.items;
+
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+
+                if (item.type.indexOf('image') !== -1) {
+                    const file = item.getAsFile();
+
+                    if (file) {
+                        console.log('📁 Pasted file in edit modal:', file.name);
+                        handleEditPhotoUpload(file);
+                        showSuccess('Ảnh đã được paste từ clipboard!');
+                        return;
+                    }
+                }
+            }
+
+            showError('Không tìm thấy hình ảnh trong clipboard.');
         });
     }
 }
