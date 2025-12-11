@@ -139,26 +139,6 @@ function startSendingEmail() {
     startStatsUpdate();
 }
 
-// Load Gmail configuration
-function loadGmailConfig() {
-    console.log('📧 [LOAD GMAIL CONFIG] Starting...');
-    const savedConfig = localStorage.getItem('gmailConfig');
-    console.log('📧 [LOAD GMAIL CONFIG] savedConfig from localStorage:', savedConfig);
-
-    if (savedConfig) {
-        try {
-            const config = JSON.parse(savedConfig);
-            console.log('📧 [LOAD GMAIL CONFIG] Parsed config:', config);
-            window.start_email = config.senderEmail;
-            console.log('✅ [LOAD GMAIL CONFIG] Set window.start_email =', window.start_email);
-        } catch (e) {
-            console.error('❌ [LOAD GMAIL CONFIG] Failed to parse:', e);
-        }
-    } else {
-        console.warn('⚠️ [LOAD GMAIL CONFIG] No Gmail config found in localStorage');
-    }
-}
-
 // Load employees on page load
 async function loadEmployees() {
     console.log('👥 [LOAD EMPLOYEES] Starting...');
@@ -355,24 +335,6 @@ async function sendPayrollEmail(emailTitle) {
     console.log('📮 [SEND EMAIL] ========== STARTING EMAIL SEND ==========');
     console.log('📮 [SEND EMAIL] Email title:', emailTitle);
 
-    // Check Gmail config
-    const gmailConfig = localStorage.getItem('gmailConfig');
-    console.log('📮 [SEND EMAIL] Gmail config exists:', !!gmailConfig);
-
-    if (!gmailConfig) {
-        console.error('❌ [SEND EMAIL] No Gmail config found');
-        alert('Vui lòng cấu hình Gmail trong trang Cài đặt trước');
-        return false;
-    }
-
-    // Check start_email
-    console.log('📮 [SEND EMAIL] window.start_email:', window.start_email);
-    if (!window.start_email) {
-        console.error('❌ [SEND EMAIL] start_email is not set');
-        alert('Email gửi chưa được cấu hình');
-        return false;
-    }
-
     // Check end_email
     console.log('📮 [SEND EMAIL] window.end_email:', window.end_email);
     if (!window.end_email) {
@@ -389,19 +351,9 @@ async function sendPayrollEmail(emailTitle) {
         return false;
     }
 
-    // Parse Gmail config
-    const config = JSON.parse(gmailConfig);
-    console.log('📮 [SEND EMAIL] Parsed Gmail config:', {
-        senderEmail: config.senderEmail,
-        smtpServer: config.smtpServer,
-        smtpPort: config.smtpPort,
-        hasPassword: !!config.appPassword
-    });
-
     // All checks passed
     console.log('✅ [SEND EMAIL] All validations passed!');
     console.log('📮 [SEND EMAIL] Email details:', {
-        from: window.start_email,
         to: window.end_email,
         subject: emailTitle,
         fileName: uploadedFile.name,
@@ -417,11 +369,7 @@ async function sendPayrollEmail(emailTitle) {
 
         // Prepare FormData
         const formData = new FormData();
-        formData.append('payrollFile', uploadedFile);
-        formData.append('senderEmail', config.senderEmail);
-        formData.append('smtpServer', config.smtpServer);
-        formData.append('smtpPort', config.smtpPort);
-        formData.append('appPassword', config.appPassword);
+        formData.append('file', uploadedFile);
         formData.append('recipientEmail', window.end_email);
         formData.append('subject', emailTitle);
         formData.append('employeeName', selectedEmployee ? `${selectedEmployee.first_name} ${selectedEmployee.last_name}` : '');
@@ -492,8 +440,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load email statistics
     loadEmailStats();
 
-    // Load Gmail config and employees
-    loadGmailConfig();
+    // Load employees
     loadEmployees();
 
     // Employee search functionality
@@ -610,7 +557,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         console.log('🔘 [UPLOAD BUTTON] uploadedFile:', uploadedFile);
         console.log('🔘 [UPLOAD BUTTON] selectedEmployee:', selectedEmployee);
-        console.log('🔘 [UPLOAD BUTTON] window.start_email:', window.start_email);
         console.log('🔘 [UPLOAD BUTTON] window.end_email:', window.end_email);
 
         if (!uploadedFile) {

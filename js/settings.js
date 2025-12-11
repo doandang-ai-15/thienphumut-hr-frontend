@@ -163,7 +163,7 @@ let allActivityLogs = [];
 // Show/Hide sections
 function showSection(sectionName) {
     // Hide all sections
-    const sections = ['profile', 'company', 'security', 'gmail', 'activity'];
+    const sections = ['profile', 'company', 'security', 'activity'];
     sections.forEach(section => {
         const el = document.getElementById(`section-${section}`);
         if (el) {
@@ -462,59 +462,6 @@ async function saveCompanyInfo() {
     }
 }
 
-// Handle Gmail configuration save
-async function handleGmailConfigSave(event) {
-    event.preventDefault();
-
-    const form = event.target;
-    const formData = new FormData(form);
-
-    const gmailConfig = {
-        senderEmail: formData.get('sender_email'),
-        smtpServer: formData.get('smtp_server'),
-        smtpPort: formData.get('smtp_port'),
-        appPassword: formData.get('app_password')
-    };
-
-    try {
-        showLoading();
-
-        // Save to localStorage
-        localStorage.setItem('gmailConfig', JSON.stringify(gmailConfig));
-
-        // Set global start_email variable
-        window.start_email = gmailConfig.senderEmail;
-
-        hideLoading();
-        showSuccess('Cấu hình Gmail đã được lưu thành công!');
-    } catch (error) {
-        hideLoading();
-        console.error('Failed to save Gmail config:', error);
-        showError(error.message || 'Không thể lưu cấu hình Gmail');
-    }
-}
-
-// Load Gmail configuration
-function loadGmailConfig() {
-    const savedConfig = localStorage.getItem('gmailConfig');
-    if (savedConfig) {
-        try {
-            const config = JSON.parse(savedConfig);
-
-            // Populate form fields
-            if (config.senderEmail) document.getElementById('senderEmail').value = config.senderEmail;
-            if (config.smtpServer) document.getElementById('smtpServer').value = config.smtpServer;
-            if (config.smtpPort) document.getElementById('smtpPort').value = config.smtpPort;
-            if (config.appPassword) document.getElementById('appPassword').value = config.appPassword;
-
-            // Set global start_email variable
-            window.start_email = config.senderEmail;
-        } catch (e) {
-            console.error('Failed to load Gmail config:', e);
-        }
-    }
-}
-
 // Initialize settings page
 document.addEventListener('DOMContentLoaded', function() {
     loadUserProfile();
@@ -568,12 +515,4 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Setup Gmail configuration form handler
-    const gmailConfigForm = document.getElementById('gmailConfigForm');
-    if (gmailConfigForm) {
-        gmailConfigForm.addEventListener('submit', handleGmailConfigSave);
-    }
-
-    // Load Gmail configuration
-    loadGmailConfig();
 });
