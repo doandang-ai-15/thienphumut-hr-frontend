@@ -84,6 +84,11 @@ function renderEmployees(employees) {
             lastName: emp.last_name
         });
 
+        // Gmail status
+        const gmailStatus = emp.have_gmail !== false; // Default true if undefined
+        const gmailClass = gmailStatus ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600';
+        const gmailText = gmailStatus ? 'Đã có gmail' : 'Chưa cập nhật gmail';
+
         return `
             <div class="employee-card bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/50 text-center cursor-pointer transition-all duration-300 fade-up stagger-${(index % 6) + 1} relative group">
                 <!-- Three-dot menu (top-right) -->
@@ -99,6 +104,14 @@ function renderEmployees(employees) {
                     </div>
                     <h3 class="mt-4 text-sm font-semibold text-gray-800">${emp.first_name} ${emp.last_name}</h3>
                     <p class="text-xs text-gray-500 mt-1">${emp.department_name || 'No Department'}</p>
+
+                    <!-- Gmail Status Note (clickable to toggle) -->
+                    <div onclick="event.stopPropagation(); toggleGmailStatus(${emp.id}, ${gmailStatus})"
+                         class="mt-2 inline-flex items-center gap-1 px-2 py-1 ${gmailClass} rounded-full cursor-pointer hover:opacity-80 transition-opacity"
+                         title="Click để thay đổi trạng thái Gmail">
+                        <span class="text-xs font-medium">${gmailText}</span>
+                    </div>
+
                     <div class="mt-3 inline-flex items-center gap-1 px-2 py-1 ${statusColors[emp.status]} rounded-full">
                         <span class="w-1.5 h-1.5 ${statusDots[emp.status]} rounded-full"></span>
                         <span class="text-xs">${statusText[emp.status]}</span>
@@ -1035,3 +1048,192 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Toggle Gmail Status
+async function toggleGmailStatus(employeeId, currentStatus) {
+    try {
+        const newStatus = !currentStatus;
+        const statusText = newStatus ? 'Đã có gmail' : 'Chưa cập nhật gmail';
+
+        // Confirm action
+        if (!confirm(`Thay đổi trạng thái Gmail thành "${statusText}"?`)) {
+            return;
+        }
+
+        showLoading();
+
+        // Update employee
+        const response = await api.updateEmployee(employeeId, {
+            have_gmail: newStatus
+        });
+
+        if (response.success) {
+            hideLoading();
+            showSuccess(`Đã cập nhật trạng thái Gmail: ${statusText}`);
+            // Reload employees to reflect changes
+            await loadEmployees();
+        }
+    } catch (error) {
+        hideLoading();
+        console.error('Failed to update Gmail status:', error);
+        showError('Không thể cập nhật trạng thái Gmail');
+    }
+}
+
+// Open Filter Modal
+async function openFilterModal() {
+    try {
+        showLoading();
+
+        // Fetch departments
+        const response = await api.getDepartments();
+        hideLoading();
+
+        if (!response.success) {
+            showError('Không thể tải danh sách phòng ban');
+            return;
+        }
+
+        const departments = response.data;
+
+        // Create modal HTML
+        const modalHTML = `
+            <div id="filterModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <!-- Backdrop -->
+                <div class="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" onclick="closeFilterModal()"></div>
+
+                <!-- Modal Content -->
+                <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+                    <!-- Header -->
+                    <div class="px-8 py-6 border-b border-gray-100 bg-gradient-to-r from-[#FDEDED]/50 to-[#EDFFF0]/50">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h2 class="text-2xl font-semibold text-gray-800">Lọc theo phòng ban</h2>
+                                <p class="text-sm text-gray-500 mt-1">Chọn phòng ban để lọc nhân viên</p>
+                            </div>
+                            <button onclick="closeFilterModal()" class="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
+                                <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="px-8 py-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            ${departments.map(dept => `
+                                <label class="flex items-center gap-3 p-4 border-2 border-gray-100 rounded-xl hover:border-[#F875AA]/30 cursor-pointer transition-all group">
+                                    <input type="checkbox"
+                                           class="department-filter-checkbox w-5 h-5 rounded border-gray-300 text-[#F875AA] focus:ring-[#F875AA]"
+                                           value="${dept.id}"
+                                           data-department-name="${dept.name}">
+                                    <div class="flex-1">
+                                        <p class="text-sm font-medium text-gray-800 group-hover:text-[#F875AA] transition-colors">${dept.name}</p>
+                                        <p class="text-xs text-gray-500">${dept.employee_count || 0} nhân viên</p>
+                                    </div>
+                                </label>
+                            `).join('')}
+                        </div>
+
+                        <!-- Select All / Deselect All -->
+                        <div class="mt-6 flex gap-3">
+                            <button onclick="selectAllDepartments()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors">
+                                Chọn tất cả
+                            </button>
+                            <button onclick="deselectAllDepartments()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors">
+                                Bỏ chọn tất cả
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="px-8 py-5 border-t border-gray-100 bg-gray-50 flex gap-3">
+                        <button onclick="closeFilterModal()" type="button"
+                                class="flex-1 py-3 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 transition-all">
+                            Hủy
+                        </button>
+                        <button onclick="applyDepartmentFilter()" type="button"
+                                class="flex-1 py-3 bg-gradient-to-r from-[#F875AA] to-[#AEDEFC] text-white rounded-xl font-medium hover:shadow-lg transition-all">
+                            Bắt đầu lọc
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Inject modal into body
+        const modalContainer = document.createElement('div');
+        modalContainer.innerHTML = modalHTML;
+        document.body.appendChild(modalContainer);
+        document.body.style.overflow = 'hidden';
+
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+    } catch (error) {
+        hideLoading();
+        console.error('Failed to open filter modal:', error);
+        showError('Không thể mở bộ lọc');
+    }
+}
+
+// Close Filter Modal
+function closeFilterModal() {
+    const modal = document.getElementById('filterModal');
+    if (modal) {
+        modal.remove();
+        document.body.style.overflow = '';
+    }
+}
+
+// Select All Departments
+function selectAllDepartments() {
+    const checkboxes = document.querySelectorAll('.department-filter-checkbox');
+    checkboxes.forEach(checkbox => checkbox.checked = true);
+}
+
+// Deselect All Departments
+function deselectAllDepartments() {
+    const checkboxes = document.querySelectorAll('.department-filter-checkbox');
+    checkboxes.forEach(checkbox => checkbox.checked = false);
+}
+
+// Apply Department Filter
+async function applyDepartmentFilter() {
+    const checkboxes = document.querySelectorAll('.department-filter-checkbox:checked');
+    const selectedDepartments = Array.from(checkboxes).map(cb => cb.value);
+
+    console.log('Selected departments:', selectedDepartments);
+
+    if (selectedDepartments.length === 0) {
+        showError('Vui lòng chọn ít nhất một phòng ban');
+        return;
+    }
+
+    try {
+        showLoading();
+        closeFilterModal();
+
+        // Fetch all employees
+        const response = await api.getEmployees();
+
+        if (response.success) {
+            // Filter employees by selected departments
+            const filteredEmployees = response.data.filter(emp =>
+                selectedDepartments.includes(emp.department_id?.toString())
+            );
+
+            console.log('Filtered employees:', filteredEmployees.length);
+
+            // Render filtered employees
+            currentEmployees = filteredEmployees;
+            renderEmployees(filteredEmployees);
+
+            hideLoading();
+            showSuccess(`Đã lọc ${filteredEmployees.length} nhân viên từ ${selectedDepartments.length} phòng ban`);
+        }
+    } catch (error) {
+        hideLoading();
+        console.error('Failed to apply filter:', error);
+        showError('Không thể áp dụng bộ lọc');
+    }
+}
