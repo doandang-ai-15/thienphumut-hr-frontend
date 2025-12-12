@@ -90,8 +90,24 @@ async function updateSidebarUser() {
                 el.textContent = user.job_title || user.role;
             }
         });
+
+        // Hide sendPayroll link for non-admin users
+        hideRestrictedNavItems(user);
+
     } catch (error) {
         console.error('Failed to update sidebar user:', error);
+    }
+}
+
+// Hide restricted navigation items based on user role
+function hideRestrictedNavItems(user) {
+    // Only admin can access sendPayroll
+    if (user.role !== 'admin') {
+        const sendPayrollLink = document.querySelector('aside a[href="sendPayroll.html"]');
+        if (sendPayrollLink) {
+            sendPayrollLink.style.display = 'none';
+            console.log('🔒 [AUTH] Hidden sendPayroll link for role:', user.role);
+        }
     }
 }
 

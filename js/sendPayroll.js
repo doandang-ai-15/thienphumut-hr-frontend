@@ -3,6 +3,14 @@ if (!requireAuth()) {
     throw new Error('Not authenticated');
 }
 
+// Check admin authorization - Only admin can access sendPayroll
+const currentUser = api.getUser();
+if (!currentUser || currentUser.role !== 'admin') {
+    alert('⛔ Access Denied: Only administrators can access this page.\n\nBạn không có quyền truy cập trang này.');
+    window.location.href = '/index.html';
+    throw new Error('Unauthorized: Admin access required');
+}
+
 // Global variables
 let allEmployees = [];
 let selectedEmployee = null;
