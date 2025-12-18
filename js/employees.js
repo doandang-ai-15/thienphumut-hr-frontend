@@ -5,23 +5,27 @@ if (!requireAuth()) {
     throw new Error('Not authenticated');
 }
 
-let currentEmployees = [];
+let allEmployees = []; // All employees loaded once
+let currentEmployees = []; // Filtered employees for display
 let currentFilters = {
     search: '',
     department: '',
     status: 'active'
 };
+let searchDebounceTimer = null; // Debounce timer for search
 
-// Load employees data
+// Load ALL employees data once (no filters on API call)
 async function loadEmployees() {
     try {
         showLoading();
 
-        const response = await api.getEmployees(currentFilters);
+        // Fetch ALL employees without filters
+        const response = await api.getEmployees({ status: 'active' });
 
         if (response.success) {
-            currentEmployees = response.data;
-            renderEmployees(currentEmployees);
+            allEmployees = response.data;
+            // Apply client-side filters
+            applyFilters();
         }
 
         hideLoading();
@@ -30,6 +34,42 @@ async function loadEmployees() {
         console.error('Failed to load employees:', error);
         showError('Failed to load employees. Please refresh the page.');
     }
+}
+
+// Client-side filtering (fast, no API call)
+function applyFilters() {
+    let filtered = [...allEmployees];
+
+    // Filter by search (name)
+    if (currentFilters.search) {
+        const searchLower = currentFilters.search.toLowerCase();
+        filtered = filtered.filter(emp => {
+            const fullName = `${emp.first_name} ${emp.last_name}`.toLowerCase();
+            const reverseName = `${emp.last_name} ${emp.first_name}`.toLowerCase();
+            return fullName.includes(searchLower) ||
+                   reverseName.includes(searchLower) ||
+                   emp.employee_id.toLowerCase().includes(searchLower);
+        });
+    }
+
+    // Filter by department (single or multiple)
+    if (currentFilters.departments && currentFilters.departments.length > 0) {
+        // Multiple departments
+        filtered = filtered.filter(emp =>
+            currentFilters.departments.includes(emp.department_id?.toString())
+        );
+    } else if (currentFilters.department) {
+        // Single department
+        filtered = filtered.filter(emp => emp.department_id === parseInt(currentFilters.department));
+    }
+
+    // Filter by status
+    if (currentFilters.status) {
+        filtered = filtered.filter(emp => emp.status === currentFilters.status);
+    }
+
+    currentEmployees = filtered;
+    renderEmployees(currentEmployees);
 }
 
 // Render employees grid
@@ -130,23 +170,35 @@ function renderEmployees(employees) {
     lucide.createIcons();
 }
 
-// Search employees
+// Search employees with debounce (300ms)
 function handleSearch(event) {
     const searchValue = event.target.value.toLowerCase();
     currentFilters.search = searchValue;
-    loadEmployees();
+
+    // Clear previous timer
+    if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
+    }
+
+    // Set new timer for debounced search
+    searchDebounceTimer = setTimeout(() => {
+        // Use client-side filtering (instant, no API call)
+        applyFilters();
+    }, 300); // Wait 300ms after user stops typing
 }
 
 // Filter by department
 function handleDepartmentFilter(departmentId) {
     currentFilters.department = departmentId;
-    loadEmployees();
+    // Use client-side filtering (instant, no API call)
+    applyFilters();
 }
 
 // Filter by status
 function handleStatusFilter(status) {
     currentFilters.status = status;
-    loadEmployees();
+    // Use client-side filtering (instant, no API call)
+    applyFilters();
 }
 
 // View employee detail
@@ -1302,31 +1354,20 @@ async function applyDepartmentFilter() {
         return;
     }
 
-    try {
-        showLoading();
-        closeFilterModal();
+    closeFilterModal();
 
-        // Fetch all employees
-        const response = await api.getEmployees();
-
-        if (response.success) {
-            // Filter employees by selected departments
-            const filteredEmployees = response.data.filter(emp =>
-                selectedDepartments.includes(emp.department_id?.toString())
-            );
-
-            console.log('Filtered employees:', filteredEmployees.length);
-
-            // Render filtered employees
-            currentEmployees = filteredEmployees;
-            renderEmployees(filteredEmployees);
-
-            hideLoading();
-            showSuccess(`Đã lọc ${filteredEmployees.length} nhân viên từ ${selectedDepartments.length} phòng ban`);
-        }
-    } catch (error) {
-        hideLoading();
-        console.error('Failed to apply filter:', error);
-        showError('Không thể áp dụng bộ lọc');
+    // Update filter and apply client-side filtering (instant)
+    if (selectedDepartments.length === 1) {
+        // Single department selected
+        currentFilters.department = selectedDepartments[0];
+    } else {
+        // Multiple departments - need custom filter
+        currentFilters.department = ''; // Clear single filter
+        currentFilters.departments = selectedDepartments; // Store multiple
     }
+
+    applyFilters();
+
+    const filteredCount = currentEmployees.length;
+    showSuccess(`Đã lọc ${filteredCount} nhân viên từ ${selectedDepartments.length} phòng ban`);
 }
