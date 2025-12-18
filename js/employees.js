@@ -191,38 +191,131 @@ function showEmployeeDetailModal(employee) {
             </div>
 
             <div class="px-8 py-6 overflow-y-auto max-h-[calc(90vh-180px)]">
-                <div class="grid grid-cols-2 gap-6">
-                    <div>
-                        <p class="text-sm text-gray-500 mb-1">Mã nhân viên</p>
-                        <p class="font-medium text-gray-800">${employee.employee_id}</p>
+                <!-- THÔNG TIN CÁ NHÂN -->
+                <div class="mb-6">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                        <i data-lucide="user" class="w-4 h-4 text-[#F875AA]"></i>
+                        Thông tin cá nhân
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Mã nhân viên</p>
+                            <p class="text-sm font-medium text-gray-800">${employee.employee_id}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Họ và tên đệm</p>
+                            <p class="text-sm font-medium text-gray-800">${employee.first_name}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Tên</p>
+                            <p class="text-sm font-medium text-gray-800">${employee.last_name}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Email</p>
+                            <p class="text-sm font-medium text-gray-800">${employee.email}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Số điện thoại</p>
+                            <p class="text-sm font-medium text-gray-800">${employee.phone || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Ngày sinh</p>
+                            <p class="text-sm font-medium text-gray-800">${employee.date_of_birth ? new Date(employee.date_of_birth).toLocaleDateString('vi-VN') : 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Giới tính</p>
+                            <p class="text-sm font-medium text-gray-800 capitalize">${employee.gender === 'male' ? 'Nam' : employee.gender === 'female' ? 'Nữ' : 'Khác'}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Trạng thái Gmail</p>
+                            <p class="text-sm font-medium ${employee.have_gmail ? 'text-green-600' : 'text-red-600'}">${employee.have_gmail !== false ? '✓ Đã có gmail' : '✗ Chưa cập nhật gmail'}</p>
+                        </div>
                     </div>
-                    <div>
-                        <p class="text-sm text-gray-500 mb-1">Email</p>
-                        <p class="font-medium text-gray-800">${employee.email}</p>
+                </div>
+
+                <!-- THÔNG TIN CÔNG VIỆC -->
+                <div class="mb-6 pt-6 border-t border-gray-100">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                        <i data-lucide="briefcase" class="w-4 h-4 text-[#AEDEFC]"></i>
+                        Thông tin công việc
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Chức vụ</p>
+                            <p class="text-sm font-medium text-gray-800">${employee.job_title}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Phòng ban</p>
+                            <p class="text-sm font-medium text-gray-800">${employee.department_name || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Loại hợp đồng</p>
+                            <p class="text-sm font-medium text-gray-800 capitalize">${employee.employment_type === 'full-time' ? 'Toàn thời gian' : employee.employment_type === 'part-time' ? 'Bán thời gian' : employee.employment_type === 'contract' ? 'Hợp đồng' : employee.employment_type}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Ngày bắt đầu</p>
+                            <p class="text-sm font-medium text-gray-800">${new Date(employee.start_date).toLocaleDateString('vi-VN')}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Vai trò hệ thống</p>
+                            <p class="text-sm font-medium text-gray-800 capitalize">${employee.role === 'admin' ? 'Quản trị viên' : employee.role === 'manager' ? 'Quản lý' : 'Nhân viên'}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Trạng thái</p>
+                            <p class="text-sm font-medium ${employee.status === 'active' ? 'text-green-600' : 'text-gray-600'} capitalize">${employee.status === 'active' ? '✓ Đang làm việc' : employee.status === 'on-leave' ? 'Nghỉ phép' : 'Không hoạt động'}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Hiệu suất</p>
+                            <p class="text-sm font-medium text-gray-800">${employee.performance_score || 0}%</p>
+                        </div>
                     </div>
-                    <div>
-                        <p class="text-sm text-gray-500 mb-1">Số điện thoại</p>
-                        <p class="font-medium text-gray-800">${employee.phone || 'N/A'}</p>
+                </div>
+
+                <!-- THÔNG TIN LƯƠNG -->
+                <div class="mb-6 pt-6 border-t border-gray-100">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                        <i data-lucide="dollar-sign" class="w-4 h-4 text-green-500"></i>
+                        Thông tin lương
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Mức lương</p>
+                            <p class="text-sm font-medium text-gray-800">${employee.salary ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(employee.salary) : 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Chu kỳ trả lương</p>
+                            <p class="text-sm font-medium text-gray-800 capitalize">${employee.pay_frequency === 'monthly' ? 'Hàng tháng' : employee.pay_frequency === 'bi-weekly' ? 'Hai tuần/lần' : employee.pay_frequency === 'weekly' ? 'Hàng tuần' : employee.pay_frequency || 'N/A'}</p>
+                        </div>
                     </div>
-                    <div>
-                        <p class="text-sm text-gray-500 mb-1">Phòng ban</p>
-                        <p class="font-medium text-gray-800">${employee.department_name || 'N/A'}</p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500 mb-1">Làm việc theo diện</p>
-                        <p class="font-medium text-gray-800 capitalize">${employee.employment_type}</p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500 mb-1">Bắt đầu làm việc</p>
-                        <p class="font-medium text-gray-800">${new Date(employee.start_date).toLocaleDateString()}</p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500 mb-1">Tình trạng (active = còn làm việc)</p>
-                        <p class="font-medium text-gray-800 capitalize">${employee.status}</p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500 mb-1">Hiệu suất</p>
-                        <p class="font-medium text-gray-800">${employee.performance_score}%</p>
+                </div>
+
+                <!-- THÔNG TIN ĐỊA CHỈ -->
+                <div class="mb-6 pt-6 border-t border-gray-100">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                        <i data-lucide="map-pin" class="w-4 h-4 text-red-500"></i>
+                        Địa chỉ
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2">
+                            <p class="text-xs text-gray-500 mb-1">Địa chỉ</p>
+                            <p class="text-sm font-medium text-gray-800">${employee.address || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Thành phố</p>
+                            <p class="text-sm font-medium text-gray-800">${employee.city || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Tỉnh/Thành</p>
+                            <p class="text-sm font-medium text-gray-800">${employee.state || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Mã bưu điện</p>
+                            <p class="text-sm font-medium text-gray-800">${employee.zip_code || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Quốc gia</p>
+                            <p class="text-sm font-medium text-gray-800">${employee.country || 'N/A'}</p>
+                        </div>
                     </div>
                 </div>
 
