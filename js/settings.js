@@ -7,6 +7,12 @@ if (!requireAuth()) {
 
 let currentUser = null;
 
+// Pagination state for activity logs
+let currentPage = 1;
+let itemsPerPage = 10;
+let totalItems = 0;
+let filteredActivityLogs = [];
+
 // Load user profile
 async function loadUserProfile() {
     try {
@@ -254,15 +260,16 @@ function filterActivityLogs() {
     const filter = document.getElementById('activityFilter').value;
     const listEl = document.getElementById('activityLogsList');
     const emptyEl = document.getElementById('activityEmpty');
+    const paginationEl = document.getElementById('activityPagination');
 
     console.log('🔍 [FILTER] Filter value:', filter);
     console.log('🔍 [FILTER] Total logs:', allActivityLogs.length);
 
-    let filteredLogs = allActivityLogs;
+    let filtered = allActivityLogs;
 
     // Apply filter
     if (filter !== 'all') {
-        filteredLogs = allActivityLogs.filter(log => {
+        filtered = allActivityLogs.filter(log => {
             const action = log.action.toLowerCase();
             const desc = (log.description || '').toLowerCase();
 
@@ -282,19 +289,80 @@ function filterActivityLogs() {
                     return action.includes(filter);
             }
         });
-        console.log('🔍 [FILTER] Filtered logs:', filteredLogs.length);
+        console.log('🔍 [FILTER] Filtered logs:', filtered.length);
     }
 
-    // Display logs
-    if (filteredLogs.length === 0) {
+    // Store filtered results
+    filteredActivityLogs = filtered;
+    totalItems = filtered.length;
+
+    // Reset to first page when filter changes
+    currentPage = 1;
+
+    // Display logs with pagination
+    if (filteredActivityLogs.length === 0) {
         console.log('📭 [FILTER] No logs to display - showing empty state');
         listEl.classList.add('hidden');
         emptyEl.classList.remove('hidden');
+        paginationEl.classList.add('hidden');
     } else {
-        console.log('📋 [FILTER] Displaying', filteredLogs.length, 'logs');
+        console.log('📋 [FILTER] Displaying', filteredActivityLogs.length, 'logs');
         listEl.classList.remove('hidden');
         emptyEl.classList.add('hidden');
-        renderActivityLogs(filteredLogs);
+        paginationEl.classList.remove('hidden');
+        renderPaginatedLogs();
+    }
+}
+
+// Render logs for current page
+function renderPaginatedLogs() {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const logsToDisplay = filteredActivityLogs.slice(startIndex, endIndex);
+
+    console.log('📄 [PAGINATION] Rendering page', currentPage, 'items:', startIndex, '-', endIndex);
+
+    renderActivityLogs(logsToDisplay);
+    updatePaginationControls();
+}
+
+// Update pagination controls
+function updatePaginationControls() {
+    const startIndex = (currentPage - 1) * itemsPerPage + 1;
+    const endIndex = Math.min(currentPage * itemsPerPage, totalItems);
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+    // Update info text
+    document.getElementById('paginationInfo').textContent = `${startIndex}-${endIndex} của ${totalItems}`;
+
+    // Update button states
+    document.getElementById('prevPage').disabled = currentPage === 1;
+    document.getElementById('nextPage').disabled = currentPage >= totalPages;
+
+    console.log('🔢 [PAGINATION] Page', currentPage, 'of', totalPages);
+}
+
+// Change items per page
+function changeItemsPerPage() {
+    itemsPerPage = parseInt(document.getElementById('itemsPerPage').value);
+    currentPage = 1; // Reset to first page
+    renderPaginatedLogs();
+}
+
+// Go to next page
+function nextPage() {
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    if (currentPage < totalPages) {
+        currentPage++;
+        renderPaginatedLogs();
+    }
+}
+
+// Go to previous page
+function previousPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        renderPaginatedLogs();
     }
 }
 
@@ -346,7 +414,7 @@ function translateDescription(description) {
     if (!description) return 'Không có mô tả';
 
     // Replace common English terms with Vietnamese
-    return description
+    let translated = description
         .replace(/logged in/gi, 'đã đăng nhập')
         .replace(/logged out/gi, 'đã đăng xuất')
         .replace(/Created new employee:/gi, 'Đã tạo nhân viên mới:')
@@ -358,6 +426,28 @@ function translateDescription(description) {
         .replace(/Updated department:/gi, 'Đã cập nhật phòng ban:')
         .replace(/Deleted department:/gi, 'Đã xóa phòng ban:')
         .replace(/performed/gi, 'đã thực hiện');
+
+    // Replace HTTP method + URL paths with user-friendly Vietnamese (e.g., PUT /api/employees/17 -> mã nhân viên: 17)
+    translated = translated
+        .replace(/POST \/api\/employees\/(\d+)/gi, 'mã nhân viên: $1')
+        .replace(/PUT \/api\/employees\/(\d+)/gi, 'mã nhân viên: $1')
+        .replace(/DELETE \/api\/employees\/(\d+)/gi, 'mã nhân viên: $1')
+        .replace(/GET \/api\/employees\/(\d+)/gi, 'mã nhân viên: $1')
+        .replace(/POST \/api\/departments\/(\d+)/gi, 'mã phòng ban: $1')
+        .replace(/PUT \/api\/departments\/(\d+)/gi, 'mã phòng ban: $1')
+        .replace(/DELETE \/api\/departments\/(\d+)/gi, 'mã phòng ban: $1')
+        .replace(/GET \/api\/departments\/(\d+)/gi, 'mã phòng ban: $1')
+        .replace(/POST \/api\/leave-applications\/(\d+)/gi, 'mã đơn nghỉ phép: $1')
+        .replace(/PUT \/api\/leave-applications\/(\d+)/gi, 'mã đơn nghỉ phép: $1')
+        .replace(/DELETE \/api\/leave-applications\/(\d+)/gi, 'mã đơn nghỉ phép: $1')
+        .replace(/POST \/api\/contracts\/(\d+)/gi, 'mã hợp đồng: $1')
+        .replace(/PUT \/api\/contracts\/(\d+)/gi, 'mã hợp đồng: $1')
+        .replace(/DELETE \/api\/contracts\/(\d+)/gi, 'mã hợp đồng: $1');
+
+    // Replace "ID: [number]" with more user-friendly Vietnamese
+    translated = translated.replace(/\bID:\s*(\d+)/gi, 'Số thứ tự tài khoản đang thao tác: $1');
+
+    return translated;
 }
 
 // Render activity logs in UI

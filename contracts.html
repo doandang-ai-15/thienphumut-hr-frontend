@@ -148,25 +148,10 @@
                 </a>
             </div>
               </nav>
-            <!-- User Profile -->
-            <div class="p-4 border-t border-gray-100/50">
-                <div class="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-[#FDEDED]/50 to-[#EDFFF0]/50">
-                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[#F875AA] to-[#AEDEFC] flex items-center justify-center text-white font-semibold text-sm">
-                        JD
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-gray-800 truncate">John Doe</p>
-                        <p class="text-xs text-gray-500 truncate">HR Manager</p>
-                    </div>
-                    <a href="login.html" class="text-gray-400 hover:text-[#F875AA] transition-colors">
-                        <i data-lucide="log-out" class="w-4 h-4"></i>
-                    </a>
-                </div>
-            </div>
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 ml-64 p-8">
+        <main class="flex-1 ml-64 p-8 pb-24">
             <!-- Header -->
             <div class="flex items-center justify-between mb-8">
                 <div>
@@ -175,10 +160,27 @@
                         Quản lý tất cả hợp đồng nhân viên của bạn ở một nơi.
                     </p>
                 </div>
-                <button onclick="openModal()" class="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#F875AA] to-[#AEDEFC] text-white rounded-xl font-medium text-sm hover:shadow-lg hover:-translate-y-0.5 transition-all">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
-                    Thêm hợp đồng mới
-                </button>
+
+                <div class="flex items-center gap-3">
+                    <!-- User Profile - Top Right -->
+                    <div class="flex items-center gap-3 px-4 py-2 rounded-xl bg-white/70 backdrop-blur-sm border border-gray-100 shadow-sm">
+                        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-[#F875AA] to-[#AEDEFC] flex items-center justify-center text-white font-semibold text-sm">
+                            JD
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-800 truncate">John Doe</p>
+                            <p class="text-xs text-gray-500 truncate">HR Manager</p>
+                        </div>
+                        <a href="login.html" class="text-gray-400 hover:text-[#F875AA] transition-colors" title="Đăng xuất">
+                            <i data-lucide="log-out" class="w-4 h-4"></i>
+                        </a>
+                    </div>
+
+                    <button onclick="openModal()" class="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#F875AA] to-[#AEDEFC] text-white rounded-xl font-medium text-sm hover:shadow-lg hover:-translate-y-0.5 transition-all">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        Thêm hợp đồng mới
+                    </button>
+                </div>
             </div>
 
             <!-- Stats -->

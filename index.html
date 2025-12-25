@@ -97,21 +97,26 @@
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 p-4 lg:p-8 overflow-auto">
+        <main class="flex-1 p-4 lg:p-8 overflow-auto pb-24">
             <!-- Header -->
             <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 animate-fade-in">
                 <div>
                     <h1 class="text-2xl lg:text-3xl font-semibold text-gray-800 tracking-tight">Chào mừng đến với giao diện Quản lý nhân sự Thiên Phú Mút! 🎉</h1>
                     <p class="text-gray-500 text-sm mt-1">Đây là giao diện tổng quát công ty TPM cho bạn hôm nay.</p>
                 </div>
-                <div class="flex items-center gap-4">
-                    <!-- <button class="p-2 rounded-xl bg-white/80 border border-gray-100 hover:border-[#F875AA]/30 transition-all hover:shadow-lg">
-                        <i data-lucide="bell" class="w-5 h-5 text-gray-500"></i>
-                    </button> -->
-                    <!-- <div class="flex items-center gap-3 px-4 py-2 rounded-xl bg-white/80 border border-gray-100">
-                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#F875AA] to-[#AEDEFC]"></div>
-                        <span class="text-sm font-medium text-gray-700 hidden sm:block">Sarah Johnson</span>
-                    </div> -->
+
+                <!-- User Profile - Top Right -->
+                <div class="flex items-center gap-3 px-4 py-2 rounded-xl bg-white/70 backdrop-blur-sm border border-gray-100 shadow-sm">
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-[#F875AA] to-[#AEDEFC] flex items-center justify-center text-white font-semibold text-sm">
+                        JD
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-800 truncate">John Doe</p>
+                        <p class="text-xs text-gray-500 truncate">HR Manager</p>
+                    </div>
+                    <a href="login.html" class="text-gray-400 hover:text-[#F875AA] transition-colors" title="Đăng xuất">
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                    </a>
                 </div>
             </header>
 
@@ -326,41 +331,43 @@
                         </div>
                     </div>
                 </div>
-            </div>
-             <!-- Bottom Bar -->
-                <div class="border-t border-[#F875AA]/10 bg-gradient-to-r from-[#FDEDED]/30 via-white/50 to-[#EDFFF0]/30 px-8 lg:px-12 py-6">
-                    <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-                        <!-- Copyright -->
-                        <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
-                            <p class="text-sm text-gray-500">© 2025 ThienPhuMut. Bản quyền thuộc về công ty TNHH Thiên Phú Mút.</p>
-                            <div class="flex items-center gap-4">
-                                <a href="#" class="text-xs text-gray-400 hover:text-[#F875AA] transition-colors">Chính sách bảo mật</a>
-                                <span class="text-gray-300">•</span>
-                                <a href="#" class="text-xs text-gray-400 hover:text-[#F875AA] transition-colors">Điều khoản dịch vụ</a>
-                                <span class="text-gray-300">•</span>
-                                <a href="#" class="text-xs text-gray-400 hover:text-[#F875AA] transition-colors">Cookies</a>
-                            </div>
-                        </div>
-
-                        <!-- Social Icons -->
-                        <div class="flex items-center gap-3">
-                            <a href="#" class="social-icon w-10 h-10 rounded-xl bg-white/80 border border-gray-100 flex items-center justify-center hover:border-[#F875AA]/30 hover:bg-gradient-to-br hover:from-[#F875AA]/10 hover:to-[#AEDEFC]/10 hover:shadow-lg">
-                                <i data-lucide="facebook" class="w-4 h-4 text-gray-500"></i>
-                            </a>
-                            <a href="#" class="social-icon w-10 h-10 rounded-xl bg-white/80 border border-gray-100 flex items-center justify-center hover:border-[#F875AA]/30 hover:bg-gradient-to-br hover:from-[#F875AA]/10 hover:to-[#AEDEFC]/10 hover:shadow-lg">
-                                <i data-lucide="linkedin" class="w-4 h-4 text-gray-500"></i>
-                            </a>
-                          
-                            <a href="#" class="social-icon w-10 h-10 rounded-xl bg-white/80 border border-gray-100 flex items-center justify-center hover:border-[#F875AA]/30 hover:bg-gradient-to-br hover:from-[#F875AA]/10 hover:to-[#AEDEFC]/10 hover:shadow-lg">
-                                <i data-lucide="instagram" class="w-4 h-4 text-gray-500"></i>
-                            </a>
-                            <a href="#" class="social-icon w-10 h-10 rounded-xl bg-white/80 border border-gray-100 flex items-center justify-center hover:border-[#F875AA]/30 hover:bg-gradient-to-br hover:from-[#F875AA]/10 hover:to-[#AEDEFC]/10 hover:shadow-lg">
-                                <i data-lucide="youtube" class="w-4 h-4 text-gray-500"></i>
-                            </a>
-                        </div>
+            </div>        </main>
+    </div>
+    <!-- Fixed Bottom Bar (Sticky Footer) -->
+    <footer class="fixed bottom-0 left-0 right-0 z-30 border-t border-[#F875AA]/10 bg-white/95 backdrop-blur-xl shadow-lg">
+        <div class="ml-64 px-8 lg:px-12 py-4">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-3">
+                <!-- Copyright -->
+                <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
+                    <p class="text-xs text-gray-500">© 2025 ThienPhuMut. Bản quyền thuộc về công ty TNHH Thiên Phú Mút.</p>
+                    <div class="flex items-center gap-3">
+                        <a href="#" class="text-xs text-gray-400 hover:text-[#F875AA] transition-colors">Chính sách bảo mật</a>
+                        <span class="text-gray-300">•</span>
+                        <a href="#" class="text-xs text-gray-400 hover:text-[#F875AA] transition-colors">Điều khoản dịch vụ</a>
+                        <span class="text-gray-300">•</span>
+                        <a href="#" class="text-xs text-gray-400 hover:text-[#F875AA] transition-colors">Cookies</a>
                     </div>
                 </div>
-        </main>
+
+                <!-- Social Icons -->
+                <div class="flex items-center gap-2">
+                    <a href="#" class="w-8 h-8 rounded-lg bg-white border border-gray-100 flex items-center justify-center hover:border-[#F875AA]/30 hover:bg-gradient-to-br hover:from-[#F875AA]/10 hover:to-[#AEDEFC]/10 transition-all">
+                        <i data-lucide="facebook" class="w-3.5 h-3.5 text-gray-500"></i>
+                    </a>
+                    <a href="#" class="w-8 h-8 rounded-lg bg-white border border-gray-100 flex items-center justify-center hover:border-[#F875AA]/30 hover:bg-gradient-to-br hover:from-[#F875AA]/10 hover:to-[#AEDEFC]/10 transition-all">
+                        <i data-lucide="linkedin" class="w-3.5 h-3.5 text-gray-500"></i>
+                    </a>
+                    <a href="#" class="w-8 h-8 rounded-lg bg-white border border-gray-100 flex items-center justify-center hover:border-[#F875AA]/30 hover:bg-gradient-to-br hover:from-[#F875AA]/10 hover:to-[#AEDEFC]/10 transition-all">
+                        <i data-lucide="instagram" class="w-3.5 h-3.5 text-gray-500"></i>
+                    </a>
+                    <a href="#" class="w-8 h-8 rounded-lg bg-white border border-gray-100 flex items-center justify-center hover:border-[#F875AA]/30 hover:bg-gradient-to-br hover:from-[#F875AA]/10 hover:to-[#AEDEFC]/10 transition-all">
+                        <i data-lucide="youtube" class="w-3.5 h-3.5 text-gray-500"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
     </div>
 
     <script>
