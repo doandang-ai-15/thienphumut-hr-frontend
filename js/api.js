@@ -281,11 +281,11 @@ class APIService {
 
     // ==================== ACTIVITY LOGS ENDPOINTS ====================
     async getActivityLogs(params = {}) {
-        return this.get(`${API_CONFIG.BASE_URL}/activity-logs`, params);
+        return this.get('/activity-logs', params);
     }
 
     async getMyActivityLogs(params = {}) {
-        return this.get(`${API_CONFIG.BASE_URL}/activity-logs/me`, params);
+        return this.get('/activity-logs/me', params);
     }
 }
 
