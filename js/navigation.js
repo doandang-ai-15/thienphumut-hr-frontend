@@ -61,42 +61,87 @@ function setupMobileMenu() {
     }
 }
 
-// Update user info in sidebar
+// Update user info in sidebar and header
 async function updateSidebarUser() {
     try {
-        const user = api.getUser();
-        if (!user) return;
+        // Get fresh user data from API
+        const response = await api.getMe();
+        if (!response.success || !response.data) {
+            console.warn('⚠️ [NAV] Failed to fetch user data, using cached user');
+            const cachedUser = api.getUser();
+            if (!cachedUser) return;
+            updateUserDisplay(cachedUser);
+            hideRestrictedNavItems(cachedUser);
+            return;
+        }
 
-        // Update sidebar user name
-        const sidebarNameElements = document.querySelectorAll('aside .text-sm.font-medium.text-gray-800');
-        sidebarNameElements.forEach(el => {
-            if (el.textContent.includes('John Doe') || el.textContent.includes('JD')) {
-                el.textContent = `${user.first_name} ${user.last_name}`;
-            }
-        });
+        const user = response.data;
+        console.log('👤 [NAV] Fetched user info from API:', user);
 
-        // Update sidebar user initials
-        const sidebarAvatars = document.querySelectorAll('aside .w-10.h-10.rounded-full');
-        sidebarAvatars.forEach(el => {
-            if (el.textContent === 'JD' || el.textContent.length <= 2) {
-                el.textContent = `${user.first_name[0]}${user.last_name[0]}`;
-            }
-        });
-
-        // Update sidebar role
-        const roleElements = document.querySelectorAll('aside .text-xs.text-gray-500');
-        roleElements.forEach(el => {
-            if (el.textContent === 'HR Manager') {
-                el.textContent = user.job_title || user.role;
-            }
-        });
+        // Update display with fresh data
+        updateUserDisplay(user);
 
         // Hide sendPayroll link for non-admin users
         hideRestrictedNavItems(user);
 
     } catch (error) {
-        console.error('Failed to update sidebar user:', error);
+        console.error('❌ [NAV] Failed to update user info:', error);
+        // Fallback to cached user data
+        const cachedUser = api.getUser();
+        if (cachedUser) {
+            updateUserDisplay(cachedUser);
+            hideRestrictedNavItems(cachedUser);
+        }
     }
+}
+
+// Helper function to update user display elements
+function updateUserDisplay(user) {
+    // Get user initials
+    const initials = user.first_name && user.last_name
+        ? `${user.first_name[0]}${user.last_name[0]}`.toUpperCase()
+        : (user.email ? user.email[0].toUpperCase() : 'U');
+
+    const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || 'User';
+    const jobTitle = user.job_title || user.role || 'Employee';
+
+    console.log('🔄 [NAV] Updating display with:', { initials, fullName, jobTitle });
+
+    // Strategy: Find all avatar elements first, then work up to find their containers
+    const avatarElements = document.querySelectorAll('.w-9.h-9.rounded-full, .w-10.h-10.rounded-full');
+
+    avatarElements.forEach(avatar => {
+        // Skip if this avatar contains an image (not text initials)
+        if (avatar.querySelector('img')) return;
+
+        // Get the container that has both avatar and user info
+        // User profile structure: parent div contains avatar + info div + logout link
+        const container = avatar.closest('div.flex.items-center');
+        if (!container) return;
+
+        // Find name and role elements within this specific container
+        const infoContainer = container.querySelector('.flex-1.min-w-0');
+        if (!infoContainer) return;
+
+        const nameEl = infoContainer.querySelector('.text-sm.font-medium.text-gray-800');
+        const roleEl = infoContainer.querySelector('.text-xs.text-gray-500');
+
+        // Update avatar initials - always update since HTML is now empty
+        avatar.textContent = initials;
+        console.log('✅ [NAV] Updated avatar to:', initials);
+
+        // Update user name - always update since HTML is now empty
+        if (nameEl) {
+            nameEl.textContent = fullName;
+            console.log('✅ [NAV] Updated name to:', fullName);
+        }
+
+        // Update job title - always update since HTML is now empty
+        if (roleEl) {
+            roleEl.textContent = jobTitle;
+            console.log('✅ [NAV] Updated role to:', jobTitle);
+        }
+    });
 }
 
 // Hide restricted navigation items based on user role
