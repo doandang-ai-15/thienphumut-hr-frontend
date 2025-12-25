@@ -262,7 +262,26 @@ function filterActivityLogs() {
 
     // Apply filter
     if (filter !== 'all') {
-        filteredLogs = allActivityLogs.filter(log => log.action.toLowerCase().includes(filter.toLowerCase()));
+        filteredLogs = allActivityLogs.filter(log => {
+            const action = log.action.toLowerCase();
+            const desc = (log.description || '').toLowerCase();
+
+            // Check both action and description for keywords
+            switch(filter) {
+                case 'login':
+                    return action.includes('login') || desc.includes('logged in');
+                case 'logout':
+                    return action.includes('logout') || desc.includes('logged out');
+                case 'create':
+                    return action.includes('create') || action.includes('post') || desc.includes('created');
+                case 'update':
+                    return action.includes('update') || action.includes('put') || desc.includes('updated');
+                case 'delete':
+                    return action.includes('delete') || desc.includes('deleted') || desc.includes('removed');
+                default:
+                    return action.includes(filter);
+            }
+        });
         console.log('🔍 [FILTER] Filtered logs:', filteredLogs.length);
     }
 
