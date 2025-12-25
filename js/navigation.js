@@ -134,11 +134,12 @@ function updateUserDisplay(user) {
             return;
         }
 
-        // Get the container that has both avatar and user info
+        // Get the parent container that has both avatar and user info
         // User profile structure: parent div contains avatar + info div + logout link
-        const container = avatar.closest('div.flex.items-center');
-        if (!container) {
-            console.log(`⚠️ [NAV] Avatar ${index + 1} - no container found`);
+        // We need to get the parent, not the avatar itself (which also has flex items-center)
+        const container = avatar.parentElement;
+        if (!container || !container.classList.contains('flex')) {
+            console.log(`⚠️ [NAV] Avatar ${index + 1} - no container found or not flex`);
             console.log(`⚠️ [NAV] Avatar HTML:`, avatar.outerHTML);
             return;
         }
