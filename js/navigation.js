@@ -139,13 +139,21 @@ function updateUserDisplay(user) {
         const container = avatar.closest('div.flex.items-center');
         if (!container) {
             console.log(`⚠️ [NAV] Avatar ${index + 1} - no container found`);
+            console.log(`⚠️ [NAV] Avatar HTML:`, avatar.outerHTML);
             return;
         }
+        console.log(`✅ [NAV] Avatar ${index + 1} - Found container`);
+        console.log(`📋 [NAV] Container HTML:`, container.outerHTML.substring(0, 300));
 
         // Find name and role elements within this specific container
         const infoContainer = container.querySelector('.flex-1.min-w-0');
         if (!infoContainer) {
             console.log(`⚠️ [NAV] Avatar ${index + 1} - no infoContainer found`);
+            console.log(`📋 [NAV] Container classes:`, container.className);
+            console.log(`📋 [NAV] Container children:`, container.children.length);
+            for (let i = 0; i < container.children.length; i++) {
+                console.log(`  Child ${i}:`, container.children[i].className);
+            }
             return;
         }
 
