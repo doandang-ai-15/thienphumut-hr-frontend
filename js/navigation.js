@@ -64,12 +64,20 @@ function setupMobileMenu() {
 // Update user info in sidebar and header
 async function updateSidebarUser() {
     try {
+        console.log('🔄 [NAV] Starting updateSidebarUser...');
+
         // Get fresh user data from API
         const response = await api.getMe();
+        console.log('📡 [NAV] API response:', response);
+
         if (!response.success || !response.data) {
             console.warn('⚠️ [NAV] Failed to fetch user data, using cached user');
             const cachedUser = api.getUser();
-            if (!cachedUser) return;
+            console.log('💾 [NAV] Using cached user:', cachedUser);
+            if (!cachedUser) {
+                console.error('❌ [NAV] No cached user available');
+                return;
+            }
             updateUserDisplay(cachedUser);
             hideRestrictedNavItems(cachedUser);
             return;
@@ -77,6 +85,7 @@ async function updateSidebarUser() {
 
         const user = response.data;
         console.log('👤 [NAV] Fetched user info from API:', user);
+        console.log('👤 [NAV] User fields - first_name:', user.first_name, 'last_name:', user.last_name, 'job_title:', user.job_title);
 
         // Update display with fresh data
         updateUserDisplay(user);
@@ -86,9 +95,11 @@ async function updateSidebarUser() {
 
     } catch (error) {
         console.error('❌ [NAV] Failed to update user info:', error);
+        console.error('❌ [NAV] Error details:', error.message, error.stack);
         // Fallback to cached user data
         const cachedUser = api.getUser();
         if (cachedUser) {
+            console.log('💾 [NAV] Fallback to cached user:', cachedUser);
             updateUserDisplay(cachedUser);
             hideRestrictedNavItems(cachedUser);
         }
@@ -97,6 +108,8 @@ async function updateSidebarUser() {
 
 // Helper function to update user display elements
 function updateUserDisplay(user) {
+    console.log('🔄 [NAV] updateUserDisplay called with user:', user);
+
     // Get user initials
     const initials = user.first_name && user.last_name
         ? `${user.first_name[0]}${user.last_name[0]}`.toUpperCase()
@@ -109,39 +122,62 @@ function updateUserDisplay(user) {
 
     // Strategy: Find all avatar elements first, then work up to find their containers
     const avatarElements = document.querySelectorAll('.w-9.h-9.rounded-full, .w-10.h-10.rounded-full');
+    console.log('🔍 [NAV] Found', avatarElements.length, 'avatar elements');
 
-    avatarElements.forEach(avatar => {
+    let updatedCount = 0;
+    avatarElements.forEach((avatar, index) => {
+        console.log(`🔍 [NAV] Processing avatar ${index + 1}/${avatarElements.length}`);
+
         // Skip if this avatar contains an image (not text initials)
-        if (avatar.querySelector('img')) return;
+        if (avatar.querySelector('img')) {
+            console.log(`⏭️ [NAV] Avatar ${index + 1} contains img, skipping`);
+            return;
+        }
 
         // Get the container that has both avatar and user info
         // User profile structure: parent div contains avatar + info div + logout link
         const container = avatar.closest('div.flex.items-center');
-        if (!container) return;
+        if (!container) {
+            console.log(`⚠️ [NAV] Avatar ${index + 1} - no container found`);
+            return;
+        }
 
         // Find name and role elements within this specific container
         const infoContainer = container.querySelector('.flex-1.min-w-0');
-        if (!infoContainer) return;
+        if (!infoContainer) {
+            console.log(`⚠️ [NAV] Avatar ${index + 1} - no infoContainer found`);
+            return;
+        }
 
         const nameEl = infoContainer.querySelector('.text-sm.font-medium.text-gray-800');
         const roleEl = infoContainer.querySelector('.text-xs.text-gray-500');
 
+        console.log(`🔍 [NAV] Avatar ${index + 1} - nameEl:`, nameEl ? 'found' : 'NOT FOUND', ', roleEl:', roleEl ? 'found' : 'NOT FOUND');
+
         // Update avatar initials - always update since HTML is now empty
         avatar.textContent = initials;
-        console.log('✅ [NAV] Updated avatar to:', initials);
+        console.log(`✅ [NAV] Avatar ${index + 1} - Updated avatar to:`, initials);
 
         // Update user name - always update since HTML is now empty
         if (nameEl) {
             nameEl.textContent = fullName;
-            console.log('✅ [NAV] Updated name to:', fullName);
+            console.log(`✅ [NAV] Avatar ${index + 1} - Updated name to:`, fullName);
+        } else {
+            console.error(`❌ [NAV] Avatar ${index + 1} - Name element not found!`);
         }
 
         // Update job title - always update since HTML is now empty
         if (roleEl) {
             roleEl.textContent = jobTitle;
-            console.log('✅ [NAV] Updated role to:', jobTitle);
+            console.log(`✅ [NAV] Avatar ${index + 1} - Updated role to:`, jobTitle);
+        } else {
+            console.error(`❌ [NAV] Avatar ${index + 1} - Role element not found!`);
         }
+
+        updatedCount++;
     });
+
+    console.log(`✅ [NAV] Successfully updated ${updatedCount} user profile section(s)`);
 }
 
 // Hide restricted navigation items based on user role
