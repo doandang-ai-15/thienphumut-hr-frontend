@@ -815,6 +815,12 @@ async function openEditEmployeeModal(employeeId) {
                         </div>
 
                         <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Mã nhân viên *</label>
+                            <input type="text" name="employee_id" value="${employee.employee_id}" required
+                                   class="w-full px-4 py-2.5 rounded-xl border-2 border-gray-100 focus:border-[#F875AA] focus:outline-none">
+                        </div>
+
+                        <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Số điện thoại</label>
                             <input type="tel" name="phone" value="${employee.phone || ''}"
                                    class="w-full px-4 py-2.5 rounded-xl border-2 border-gray-100 focus:border-[#F875AA] focus:outline-none">
@@ -1102,6 +1108,7 @@ async function handleUpdateEmployee() {
             first_name: formData.get('first_name'),
             last_name: formData.get('last_name'),
             email: formData.get('email'),
+            employee_id: formData.get('employee_id'),
             phone: formData.get('phone'),
             date_of_birth: formData.get('date_of_birth'),
             gender: formData.get('gender'),
