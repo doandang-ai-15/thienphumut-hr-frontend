@@ -617,6 +617,7 @@ async function handleAddEmployee(event) {
             first_name: formData.get('first_name'),
             last_name: formData.get('last_name'),
             email: formData.get('email'),
+            employee_id: formData.get('employee_id'), // Mã nhân viên
             phone: formData.get('phone'),
             date_of_birth: formData.get('date_of_birth'),
             gender: formData.get('gender'),
