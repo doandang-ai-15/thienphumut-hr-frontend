@@ -106,6 +106,17 @@ async function updateSidebarUser() {
     }
 }
 
+// Helper function to get photo URL (same logic as settings.js)
+function getPhotoUrl(photoPath) {
+    if (!photoPath) return null;
+    // If already a full URL (Cloudinary), return as is
+    if (photoPath.startsWith('http://') || photoPath.startsWith('https://')) {
+        return photoPath;
+    }
+    // Otherwise, construct backend URL
+    return `${API_CONFIG.BASE_URL.replace('/api', '')}/uploads/${photoPath}`;
+}
+
 // Helper function to update user display elements
 function updateUserDisplay(user) {
     console.log('🔄 [NAV] updateUserDisplay called with user:', user);
@@ -118,7 +129,7 @@ function updateUserDisplay(user) {
     const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || 'User';
     const jobTitle = user.job_title || user.role || 'Employee';
 
-    console.log('🔄 [NAV] Updating display with:', { initials, fullName, jobTitle });
+    console.log('🔄 [NAV] Updating display with:', { initials, fullName, jobTitle, photo: user.photo });
 
     // Strategy: Find all avatar elements first, then work up to find their containers
     const avatarElements = document.querySelectorAll('.w-9.h-9.rounded-full, .w-10.h-10.rounded-full');
@@ -127,12 +138,6 @@ function updateUserDisplay(user) {
     let updatedCount = 0;
     avatarElements.forEach((avatar, index) => {
         console.log(`🔍 [NAV] Processing avatar ${index + 1}/${avatarElements.length}`);
-
-        // Skip if this avatar contains an image (not text initials)
-        if (avatar.querySelector('img')) {
-            console.log(`⏭️ [NAV] Avatar ${index + 1} contains img, skipping`);
-            return;
-        }
 
         // Get the parent container that has both avatar and user info
         // User profile structure: parent div contains avatar + info div + logout link
@@ -144,7 +149,6 @@ function updateUserDisplay(user) {
             return;
         }
         console.log(`✅ [NAV] Avatar ${index + 1} - Found container`);
-        console.log(`📋 [NAV] Container HTML:`, container.outerHTML.substring(0, 300));
 
         // Find name and role elements within this specific container
         const infoContainer = container.querySelector('.flex-1.min-w-0');
@@ -163,9 +167,15 @@ function updateUserDisplay(user) {
 
         console.log(`🔍 [NAV] Avatar ${index + 1} - nameEl:`, nameEl ? 'found' : 'NOT FOUND', ', roleEl:', roleEl ? 'found' : 'NOT FOUND');
 
-        // Update avatar initials - always update since HTML is now empty
-        avatar.textContent = initials;
-        console.log(`✅ [NAV] Avatar ${index + 1} - Updated avatar to:`, initials);
+        // Update avatar - show photo if exists, otherwise show initials (same logic as settings.js)
+        if (user.photo) {
+            const photoUrl = getPhotoUrl(user.photo);
+            avatar.innerHTML = `<img src="${photoUrl}" alt="Avatar" class="w-full h-full object-cover rounded-full">`;
+            console.log(`✅ [NAV] Avatar ${index + 1} - Updated with photo:`, photoUrl);
+        } else {
+            avatar.textContent = initials;
+            console.log(`✅ [NAV] Avatar ${index + 1} - Updated with initials:`, initials);
+        }
 
         // Update user name - always update since HTML is now empty
         if (nameEl) {
