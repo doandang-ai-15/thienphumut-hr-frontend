@@ -298,6 +298,68 @@ function filterActivityLogs() {
     }
 }
 
+// Translate activity log action to Vietnamese
+function translateAction(action) {
+    const translations = {
+        'LOGIN': 'Đăng nhập',
+        'LOGOUT': 'Đăng xuất',
+        'CREATE_EMPLOYEE': 'Tạo nhân viên mới',
+        'UPDATE_EMPLOYEE': 'Cập nhật thông tin nhân viên',
+        'DELETE_EMPLOYEE': 'Xóa nhân viên',
+        'ADD_EMPLOYEE_TO_DEPARTMENT': 'Thêm nhân viên vào phòng ban',
+        'REMOVE_EMPLOYEE_FROM_DEPARTMENT': 'Xóa nhân viên khỏi phòng ban',
+        'CREATE_DEPARTMENT': 'Tạo phòng ban mới',
+        'UPDATE_DEPARTMENT': 'Cập nhật phòng ban',
+        'DELETE_DEPARTMENT': 'Xóa phòng ban',
+        'CREATE_LEAVE': 'Tạo đơn nghỉ phép',
+        'UPDATE_LEAVE': 'Cập nhật đơn nghỉ phép',
+        'DELETE_LEAVE': 'Xóa đơn nghỉ phép',
+        'APPROVE_LEAVE': 'Duyệt đơn nghỉ phép',
+        'REJECT_LEAVE': 'Từ chối đơn nghỉ phép',
+        'CREATE_CONTRACT': 'Tạo hợp đồng mới',
+        'UPDATE_CONTRACT': 'Cập nhật hợp đồng',
+        'DELETE_CONTRACT': 'Xóa hợp đồng'
+    };
+
+    // Check direct mapping first
+    if (translations[action]) {
+        return translations[action];
+    }
+
+    // Handle HTTP method actions (POST /api/..., PUT /api/..., DELETE /api/...)
+    if (action.startsWith('POST ')) {
+        return 'Tạo mới dữ liệu';
+    } else if (action.startsWith('PUT ')) {
+        return 'Cập nhật dữ liệu';
+    } else if (action.startsWith('DELETE ')) {
+        return 'Xóa dữ liệu';
+    } else if (action.startsWith('GET ')) {
+        return 'Truy xuất dữ liệu';
+    }
+
+    // Return original if no translation found
+    return action;
+}
+
+// Translate activity log description to Vietnamese
+function translateDescription(description) {
+    if (!description) return 'Không có mô tả';
+
+    // Replace common English terms with Vietnamese
+    return description
+        .replace(/logged in/gi, 'đã đăng nhập')
+        .replace(/logged out/gi, 'đã đăng xuất')
+        .replace(/Created new employee:/gi, 'Đã tạo nhân viên mới:')
+        .replace(/Updated employee:/gi, 'Đã cập nhật nhân viên:')
+        .replace(/Deleted employee:/gi, 'Đã xóa nhân viên:')
+        .replace(/Added (.*) to department:/gi, 'Đã thêm $1 vào phòng ban:')
+        .replace(/Removed (.*) from department:/gi, 'Đã xóa $1 khỏi phòng ban:')
+        .replace(/Created new department:/gi, 'Đã tạo phòng ban mới:')
+        .replace(/Updated department:/gi, 'Đã cập nhật phòng ban:')
+        .replace(/Deleted department:/gi, 'Đã xóa phòng ban:')
+        .replace(/performed/gi, 'đã thực hiện');
+}
+
 // Render activity logs in UI
 function renderActivityLogs(logs) {
     console.log('🎨 [RENDER] Rendering', logs.length, 'logs');
@@ -322,6 +384,10 @@ function renderActivityLogs(logs) {
             minute: '2-digit'
         });
 
+        // Translate action and description
+        const translatedAction = translateAction(log.action);
+        const translatedDescription = translateDescription(log.description);
+
         // Determine icon and color based on action
         let icon = 'activity';
         let iconColor = 'text-gray-500';
@@ -335,11 +401,11 @@ function renderActivityLogs(logs) {
             icon = 'log-out';
             iconColor = 'text-orange-500';
             bgColor = 'from-orange-100 to-orange-50';
-        } else if (log.action.toLowerCase().includes('create')) {
+        } else if (log.action.toLowerCase().includes('create') || log.action.toLowerCase().includes('post')) {
             icon = 'plus-circle';
             iconColor = 'text-blue-500';
             bgColor = 'from-blue-100 to-blue-50';
-        } else if (log.action.toLowerCase().includes('update')) {
+        } else if (log.action.toLowerCase().includes('update') || log.action.toLowerCase().includes('put')) {
             icon = 'edit';
             iconColor = 'text-[#AEDEFC]';
             bgColor = 'from-[#AEDEFC]/20 to-[#AEDEFC]/10';
@@ -355,8 +421,8 @@ function renderActivityLogs(logs) {
                     <i data-lucide="${icon}" class="w-5 h-5 ${iconColor}"></i>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-gray-800">${log.action}</p>
-                    <p class="text-xs text-gray-500 mt-1">${log.description || 'Không có mô tả'}</p>
+                    <p class="text-sm font-medium text-gray-800">${translatedAction}</p>
+                    <p class="text-xs text-gray-500 mt-1">${translatedDescription}</p>
                     <div class="flex items-center gap-2 mt-2">
                         <span class="text-xs text-gray-400">${formattedDate}</span>
                         ${log.employee_id ? `<span class="text-xs text-gray-300">•</span><span class="text-xs text-gray-400">ID: ${log.employee_id}</span>` : ''}
