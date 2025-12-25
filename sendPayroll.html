@@ -245,10 +245,24 @@
                         </div>
                     </div>
 
-                    <!-- Response UI với 3 sections -->
+                    <!-- Response UI với daily limit warning -->
                     <div id="responseSection" class="hidden mt-6 space-y-4">
+                        <!-- Daily Limit Warning (if applicable) -->
+                        <div id="dailyLimitWarning" class="hidden bg-orange-50 rounded-xl p-4 border border-orange-200">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="alert-triangle" class="w-6 h-6 text-orange-600 flex-shrink-0"></i>
+                                <div>
+                                    <h3 class="text-sm font-semibold text-orange-800">Giới hạn gửi email hàng ngày</h3>
+                                    <p class="text-xs text-orange-600 mt-1">
+                                        Đã gửi <span id="totalSentToday" class="font-bold">0</span>/80 emails hôm nay.
+                                        Còn lại <span id="remainingQuota" class="font-bold">80</span> emails.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Summary Stats -->
-                        <div class="grid grid-cols-4 gap-3">
+                        <div class="grid grid-cols-5 gap-3">
                             <div class="bg-white rounded-xl p-3 border border-gray-200 text-center">
                                 <p class="text-2xl font-bold text-gray-800" id="totalCount">0</p>
                                 <p class="text-xs text-gray-500">Tổng số</p>
@@ -260,6 +274,10 @@
                             <div class="bg-yellow-50 rounded-xl p-3 border border-yellow-200 text-center">
                                 <p class="text-2xl font-bold text-yellow-600" id="noGmailCount">0</p>
                                 <p class="text-xs text-yellow-600">Chưa Gmail</p>
+                            </div>
+                            <div class="bg-orange-50 rounded-xl p-3 border border-orange-200 text-center">
+                                <p class="text-2xl font-bold text-orange-600" id="limitReachedCount">0</p>
+                                <p class="text-xs text-orange-600">Đạt limit</p>
                             </div>
                             <div class="bg-red-50 rounded-xl p-3 border border-red-200 text-center">
                                 <p class="text-2xl font-bold text-red-600" id="failedCount">0</p>
@@ -286,6 +304,17 @@
                             </div>
                             <div id="noGmailList" class="space-y-2 max-h-64 overflow-y-auto">
                                 <!-- No gmail items will be populated here -->
+                            </div>
+                        </div>
+
+                        <!-- Limit Reached List (Chưa gửi do đạt giới hạn) -->
+                        <div id="limitReachedSection" class="hidden bg-orange-50 rounded-xl p-4 border border-orange-200">
+                            <div class="flex items-center gap-2 mb-3">
+                                <i data-lucide="clock" class="w-5 h-5 text-orange-600"></i>
+                                <h3 class="text-sm font-semibold text-orange-800">Chưa gửi (Đạt giới hạn 80 emails/ngày)</h3>
+                            </div>
+                            <div id="limitReachedList" class="space-y-2 max-h-64 overflow-y-auto">
+                                <!-- Limit reached items will be populated here -->
                             </div>
                         </div>
 

@@ -316,9 +316,13 @@ async function sendBatchPayroll() {
             success: [],
             noGmail: [],
             notFound: [],
-            failed: []
+            failed: [],
+            limitReached: []
         };
         let totalEmployees = 0;
+        let dailyLimit = 80;
+        let totalSentToday = 0;
+        let remainingQuota = 80;
 
         // Upload file first to get SSE endpoint
         const formData = new FormData();
@@ -360,6 +364,9 @@ async function sendBatchPayroll() {
 
                     if (data.type === 'start') {
                         totalEmployees = data.total;
+                        dailyLimit = data.dailyLimit || 80;
+                        totalSentToday = data.todayCount || 0;
+                        remainingQuota = data.remainingQuota || 80;
                         progressText.textContent = `0/${totalEmployees}`;
                         progressBar.style.width = '0%';
                     } else if (data.type === 'progress') {
@@ -394,6 +401,21 @@ async function sendBatchPayroll() {
                                 email: data.email,
                                 error: data.error
                             });
+                        } else if (data.status === 'limitReached') {
+                            results.limitReached.push({
+                                employeeName: data.employeeName,
+                                employeeCode: data.employeeCode,
+                                email: data.email,
+                                reason: 'Đạt giới hạn 80 emails/ngày'
+                            });
+                        }
+
+                        // Update daily quota if available
+                        if (data.emailsSentToday !== undefined) {
+                            totalSentToday = data.emailsSentToday;
+                        }
+                        if (data.remainingQuota !== undefined) {
+                            remainingQuota = data.remainingQuota;
                         }
                     } else if (data.type === 'complete') {
                         console.log('✅ [SSE] Batch send complete!');
@@ -409,10 +431,19 @@ async function sendBatchPayroll() {
         progressSection.classList.add('hidden');
         responseSection.classList.remove('hidden');
 
+        // Show daily limit warning if applicable
+        if (totalSentToday > 0 || results.limitReached.length > 0) {
+            const dailyLimitWarning = document.getElementById('dailyLimitWarning');
+            dailyLimitWarning.classList.remove('hidden');
+            document.getElementById('totalSentToday').textContent = totalSentToday;
+            document.getElementById('remainingQuota').textContent = remainingQuota;
+        }
+
         // Update summary stats
         document.getElementById('totalCount').textContent = totalEmployees;
         document.getElementById('successCount').textContent = results.success.length;
         document.getElementById('noGmailCount').textContent = results.noGmail.length;
+        document.getElementById('limitReachedCount').textContent = results.limitReached.length;
         document.getElementById('failedCount').textContent = results.notFound.length + results.failed.length;
 
         // Populate success list
@@ -445,6 +476,23 @@ async function sendBatchPayroll() {
                         <p class="text-xs text-gray-500 truncate">${item.employeeCode} • ${item.reason}</p>
                     </div>
                     <i data-lucide="alert-circle" class="w-4 h-4 text-yellow-500 flex-shrink-0"></i>
+                </div>
+            `).join('');
+        }
+
+        // Populate limit reached list
+        if (results.limitReached.length > 0) {
+            document.getElementById('limitReachedSection').classList.remove('hidden');
+            document.getElementById('limitReachedList').innerHTML = results.limitReached.map((item, idx) => `
+                <div class="flex items-center gap-3 p-2 bg-white rounded-lg">
+                    <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+                        <span class="text-xs font-semibold text-orange-600">${idx + 1}</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-800 truncate">${item.employeeName}</p>
+                        <p class="text-xs text-gray-500 truncate">${item.employeeCode} • ${item.email}</p>
+                    </div>
+                    <i data-lucide="clock" class="w-4 h-4 text-orange-500 flex-shrink-0"></i>
                 </div>
             `).join('');
         }
