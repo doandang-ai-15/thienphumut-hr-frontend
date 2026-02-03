@@ -1178,6 +1178,121 @@ async function deleteEmployee(employeeId, employeeName) {
     }
 }
 
+// Delete all employees
+async function deleteAllEmployees() {
+    if (allEmployees.length === 0) {
+        showError('Không có nhân viên nào để xóa');
+        return;
+    }
+
+    // Get current user to skip them and admins
+    const currentUser = api.getUser();
+    const currentUserId = currentUser?.id;
+
+    // Filter out current user and admins
+    const employeesToDelete = allEmployees.filter(emp => {
+        // Skip current user (owner/admin who is logged in)
+        if (emp.id === currentUserId) {
+            return false;
+        }
+        // Skip all admin users
+        if (emp.role === 'admin') {
+            return false;
+        }
+        return true;
+    });
+
+    // Count skipped employees
+    const skippedCount = allEmployees.length - employeesToDelete.length;
+    const skippedAdmins = allEmployees.filter(emp => emp.role === 'admin' && emp.id !== currentUserId).length;
+    const skippedCurrentUser = currentUserId && allEmployees.some(emp => emp.id === currentUserId) ? 1 : 0;
+
+    if (employeesToDelete.length === 0) {
+        showError('Không có nhân viên nào để xóa (đã bỏ qua admin và tài khoản đang đăng nhập)');
+        return;
+    }
+
+    let skipInfo = '';
+    if (skippedCount > 0) {
+        skipInfo = `\n\n📌 Sẽ bỏ qua ${skippedCount} tài khoản:`;
+        if (skippedCurrentUser > 0) {
+            skipInfo += `\n   • Tài khoản đang đăng nhập (${currentUser.first_name} ${currentUser.last_name})`;
+        }
+        if (skippedAdmins > 0) {
+            skipInfo += `\n   • ${skippedAdmins} tài khoản Admin`;
+        }
+    }
+
+    const confirmMessage = `⚠️ CẢNH BÁO: Bạn sắp xóa ${employeesToDelete.length} nhân viên!${skipInfo}\n\nHành động này KHÔNG THỂ hoàn tác!\n\nBạn có chắc chắn muốn tiếp tục?`;
+
+    if (!confirm(confirmMessage)) {
+        return;
+    }
+
+    // Double confirmation for safety
+    const doubleConfirm = prompt(`Để xác nhận xóa ${employeesToDelete.length} nhân viên, vui lòng nhập "XOA TAT CA":`);
+
+    if (doubleConfirm !== 'XOA TAT CA') {
+        showError('Xác nhận không đúng. Hủy thao tác xóa.');
+        return;
+    }
+
+    try {
+        showLoading();
+
+        let successCount = 0;
+        let failCount = 0;
+        const errors = [];
+        const totalEmployees = employeesToDelete.length;
+
+        // Delete employees one by one (excluding admins and current user)
+        for (let i = 0; i < employeesToDelete.length; i++) {
+            const emp = employeesToDelete[i];
+
+            try {
+                const response = await api.deleteEmployee(emp.id);
+
+                if (response.success) {
+                    successCount++;
+                    console.log(`✅ Deleted: ${emp.first_name} ${emp.last_name}`);
+                } else {
+                    failCount++;
+                    errors.push(`${emp.first_name} ${emp.last_name}: ${response.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                failCount++;
+                errors.push(`${emp.first_name} ${emp.last_name}: ${error.message}`);
+                console.error(`❌ Failed to delete ${emp.first_name} ${emp.last_name}:`, error);
+            }
+
+            // Small delay to avoid overwhelming the server (reduced for faster bulk delete up to 300 employees)
+            await new Promise(resolve => setTimeout(resolve, 10));
+        }
+
+        hideLoading();
+
+        // Show results
+        let resultMessage = '';
+        if (failCount === 0) {
+            resultMessage = `Đã xóa thành công ${successCount} nhân viên!`;
+            if (skippedCount > 0) {
+                resultMessage += ` (Đã bỏ qua ${skippedCount} tài khoản admin/owner)`;
+            }
+            showSuccess(resultMessage);
+        } else {
+            showError(`Đã xóa ${successCount}/${totalEmployees} nhân viên. Thất bại: ${failCount}\n\nLỗi:\n${errors.join('\n')}`);
+        }
+
+        // Reload employee list
+        await loadEmployees();
+
+    } catch (error) {
+        hideLoading();
+        console.error('Failed to delete all employees:', error);
+        showError(error.message || 'Không thể xóa tất cả nhân viên');
+    }
+}
+
 // Initialize employees page
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Initializing employees page...');
@@ -1378,4 +1493,431 @@ async function applyDepartmentFilter() {
 
     const filteredCount = currentEmployees.length;
     showSuccess(`Đã lọc ${filteredCount} nhân viên từ ${selectedDepartments.length} phòng ban`);
+}
+
+// ==================== BULK IMPORT FUNCTIONS ====================
+
+let selectedExcelFile = null;
+
+// Open Bulk Import Modal
+async function openBulkImportModal() {
+    try {
+        // Fetch the modal HTML
+        const response = await fetch('/employee-bulk-import-modal.html');
+        const modalHTML = await response.text();
+
+        // Inject into container
+        const container = document.getElementById('modalContainer');
+        container.innerHTML = modalHTML;
+
+        // Show modal
+        const modal = document.getElementById('bulkImportModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            lucide.createIcons();
+
+            // Setup file upload handlers
+            setupBulkImportHandlers();
+        }
+    } catch (error) {
+        console.error('Failed to load bulk import modal:', error);
+        showError('Không thể mở form nhập hàng loạt');
+    }
+}
+
+// Close Bulk Import Modal
+function closeBulkImportModal() {
+    const modal = document.getElementById('bulkImportModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+
+        // Clear state
+        selectedExcelFile = null;
+
+        // Clear modal container after animation
+        setTimeout(() => {
+            const container = document.getElementById('modalContainer');
+            if (container) {
+                container.innerHTML = '';
+            }
+        }, 300);
+    }
+}
+
+// Setup file upload handlers
+function setupBulkImportHandlers() {
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('excelFileInput');
+
+    // Click to select file
+    dropZone.addEventListener('click', () => {
+        if (!document.getElementById('fileSelected').classList.contains('hidden')) {
+            return; // Don't trigger if file already selected
+        }
+        fileInput.click();
+    });
+
+    // File input change
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            handleFileSelect(file);
+        }
+    });
+
+    // Drag and drop
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-[#F875AA]', 'bg-gradient-to-br', 'from-[#FDEDED]/30', 'to-[#EDFFF0]/30');
+    });
+
+    dropZone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-[#F875AA]', 'bg-gradient-to-br', 'from-[#FDEDED]/30', 'to-[#EDFFF0]/30');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-[#F875AA]', 'bg-gradient-to-br', 'from-[#FDEDED]/30', 'to-[#EDFFF0]/30');
+
+        const file = e.dataTransfer.files[0];
+        if (file) {
+            handleFileSelect(file);
+        }
+    });
+}
+
+// Handle file selection
+function handleFileSelect(file) {
+    // Validate file type
+    const validTypes = [
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-excel'
+    ];
+
+    if (!validTypes.includes(file.type) && !file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+        showError('Vui lòng chọn file Excel (.xlsx hoặc .xls)');
+        return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+        showError('Kích thước file không được vượt quá 10MB');
+        return;
+    }
+
+    selectedExcelFile = file;
+
+    // Update UI
+    document.getElementById('uploadPrompt').classList.add('hidden');
+    document.getElementById('fileSelected').classList.remove('hidden');
+    document.getElementById('fileName').textContent = file.name;
+    document.getElementById('fileSize').textContent = `${(file.size / 1024).toFixed(2)} KB`;
+    document.getElementById('startImportBtn').disabled = false;
+
+    console.log('✅ File selected:', file.name);
+}
+
+// Clear selected file
+function clearSelectedFile() {
+    selectedExcelFile = null;
+    document.getElementById('uploadPrompt').classList.remove('hidden');
+    document.getElementById('fileSelected').classList.add('hidden');
+    document.getElementById('excelFileInput').value = '';
+    document.getElementById('startImportBtn').disabled = true;
+    document.getElementById('importResults').classList.add('hidden');
+}
+
+// Start bulk import
+async function startBulkImport() {
+    if (!selectedExcelFile) {
+        showError('Vui lòng chọn file Excel');
+        return;
+    }
+
+    try {
+        // Hide results from previous import
+        document.getElementById('importResults').classList.add('hidden');
+        document.getElementById('importProgress').classList.remove('hidden');
+        document.getElementById('startImportBtn').disabled = true;
+
+        // Scroll to bottom of modal body to show progress bar
+        const modalBody = document.querySelector('#bulkImportModal .overflow-y-auto');
+        if (modalBody) {
+            // Small delay to ensure progress bar is visible before scrolling
+            setTimeout(() => {
+                modalBody.scrollTo({ top: modalBody.scrollHeight, behavior: 'smooth' });
+            }, 100);
+        }
+
+        // Read Excel file
+        console.log('📖 Reading Excel file...');
+        const employeesData = await readExcelFile(selectedExcelFile);
+
+        if (!employeesData || employeesData.length === 0) {
+            throw new Error('File Excel không có dữ liệu hoặc định dạng không đúng');
+        }
+
+        console.log(`📊 Found ${employeesData.length} employees in Excel file`);
+        console.log('📋 Sample data (first row):', employeesData[0]);
+        console.log('📋 All column names:', Object.keys(employeesData[0]));
+
+        // Get departments for mapping
+        const deptResponse = await api.getDepartments();
+        const departments = deptResponse.success ? deptResponse.data : [];
+        const deptMap = {};
+        departments.forEach(dept => {
+            deptMap[dept.name.toLowerCase()] = dept.id;
+        });
+
+        // Helper function to get value from multiple possible column names
+        const getFieldValue = (empData, possibleNames) => {
+            // First, try to find column with exact match or trimmed match
+            for (const key of Object.keys(empData)) {
+                const trimmedKey = key.trim();
+                for (const name of possibleNames) {
+                    if (key === name || trimmedKey === name.trim()) {
+                        const value = empData[key];
+                        if (value !== undefined && value !== null && value !== '') {
+                            return value;
+                        }
+                    }
+                }
+            }
+            return null;
+        };
+
+        // Import employees one by one
+        let successCount = 0;
+        let failCount = 0;
+        const errors = [];
+        const importedRows = new Set(); // Track successfully imported rows to avoid duplicates
+
+        for (let i = 0; i < employeesData.length; i++) {
+            const empData = employeesData[i];
+            const rowNumber = i + 2; // +2 because row 1 is header, and index starts at 0
+
+            // Skip if already imported
+            if (importedRows.has(i)) {
+                console.log(`⏭️ Row ${rowNumber}: Already imported, skipping`);
+                continue;
+            }
+
+            // Update progress
+            const progress = ((i + 1) / employeesData.length) * 100;
+            updateProgress(progress, `Đang xử lý nhân viên ${i + 1}/${employeesData.length}`);
+
+            try {
+
+                // Map Vietnamese column names to English field names
+                let firstName = getFieldValue(empData, ['Họ và tên đệm', 'Ho va ten dem', 'first_name', 'Họ']);
+                let lastName = getFieldValue(empData, ['Tên', 'Ten', 'last_name']);
+                const email = getFieldValue(empData, ['Email', 'email']);
+                const employeeId = getFieldValue(empData, ['Mã nhân viên', 'Ma nhan vien', 'employee_id', 'MSNV', 'Mã NV']);
+                const jobTitle = getFieldValue(empData, ['Chức vụ', 'Chuc vu', 'job_title', 'Vị trí', 'Vi tri']);
+                const department = getFieldValue(empData, ['Phòng ban', 'Phong ban', 'department', 'Bộ phận', 'Bo phan']);
+
+                // Handle "Họ và tên" (full name) column - split into firstName and lastName
+                if (!firstName || !lastName) {
+                    const fullName = getFieldValue(empData, ['Họ và tên', 'Ho va ten', 'Họ tên', 'Ho ten', 'full_name', 'Tên đầy đủ', 'Ten day du']);
+                    if (fullName) {
+                        const nameParts = fullName.toString().trim().split(/\s+/);
+                        if (nameParts.length >= 2) {
+                            // Last word is lastName, rest is firstName (Vietnamese naming convention)
+                            lastName = nameParts[nameParts.length - 1];
+                            firstName = nameParts.slice(0, -1).join(' ');
+                        } else if (nameParts.length === 1) {
+                            // Single name - use as both
+                            firstName = nameParts[0];
+                            lastName = nameParts[0];
+                        }
+                    }
+                }
+
+                // Validate required fields (Email is now optional)
+                if (!firstName || !lastName || !employeeId || !jobTitle || !department) {
+                    throw new Error(`Thiếu trường bắt buộc (Họ và tên/Họ và tên đệm + Tên, Mã nhân viên, Chức vụ, Phòng ban)`);
+                }
+
+                // Determine have_gmail status based on email presence
+                const hasEmail = email && email.toString().trim() !== '';
+                const haveGmail = hasEmail;
+
+                // Map department name to ID
+                const deptName = department.toLowerCase().trim();
+                let departmentId = deptMap[deptName];
+
+                // If department not found, create it automatically
+                if (!departmentId) {
+                    console.log(`📝 Creating new department: "${department}"`);
+                    updateProgress(progress, `Đang tạo phòng ban mới: ${department}`);
+
+                    try {
+                        const createDeptResponse = await api.createDepartment({
+                            name: department,
+                            description: `Tự động tạo từ import nhân viên hàng loạt`
+                        });
+
+                        if (createDeptResponse.success) {
+                            departmentId = createDeptResponse.data.id;
+                            // Update department map
+                            deptMap[deptName] = departmentId;
+                            console.log(`✅ Created department "${department}" with ID: ${departmentId}`);
+
+                            // Show notification to user
+                            showSuccess(`Đã tạo phòng ban mới: "${department}"`);
+                        } else {
+                            throw new Error(`Không thể tạo phòng ban "${department}": ${createDeptResponse.message}`);
+                        }
+                    } catch (createError) {
+                        throw new Error(`Không thể tạo phòng ban "${department}": ${createError.message}`);
+                    }
+                }
+
+                // Prepare employee data
+                const salary = getFieldValue(empData, ['Lương', 'Luong', 'salary']);
+
+                // Generate placeholder email if no email provided (database requires email field)
+                // Format: msnv@noemail.thienphumut.local
+                const placeholderEmail = `${employeeId.toString().toLowerCase().replace(/\s+/g, '')}@noemail.thienphumut.local`;
+
+                const employeeData = {
+                    first_name: firstName,
+                    last_name: lastName,
+                    email: hasEmail ? email : placeholderEmail, // Use placeholder if no email
+                    employee_id: employeeId,
+                    job_title: jobTitle,
+                    department_id: departmentId,
+                    phone: getFieldValue(empData, ['Số điện thoại', 'So dien thoai', 'phone']),
+                    date_of_birth: getFieldValue(empData, ['Ngày sinh', 'Ngay sinh', 'date_of_birth']),
+                    gender: getFieldValue(empData, ['Giới tính', 'Gioi tinh', 'gender']) || 'other',
+                    employment_type: getFieldValue(empData, ['Loại hợp đồng', 'Loai hop dong', 'employment_type']),
+                    start_date: getFieldValue(empData, ['Ngày bắt đầu', 'Ngay bat dau', 'start_date']),
+                    salary: salary ? parseFloat(salary) : null,
+                    pay_frequency: getFieldValue(empData, ['Chu kỳ lương', 'Chu ky luong', 'pay_frequency']),
+                    address: getFieldValue(empData, ['Địa chỉ', 'Dia chi', 'address']),
+                    city: getFieldValue(empData, ['Thành phố', 'Thanh pho', 'city']),
+                    state: getFieldValue(empData, ['Tỉnh/Thành', 'Tinh/Thanh', 'state']),
+                    zip_code: getFieldValue(empData, ['Mã bưu điện', 'Ma buu dien', 'zip_code']),
+                    country: getFieldValue(empData, ['Quốc gia', 'Quoc gia', 'country']),
+                    have_gmail: haveGmail // Set gmail status based on email presence
+                };
+
+                // Create employee
+                const response = await api.createEmployee(employeeData);
+
+                if (response.success) {
+                    successCount++;
+                    importedRows.add(i); // Mark this row as successfully imported
+                    const gmailStatus = haveGmail ? '(Đã có gmail)' : '(Chưa cập nhật gmail)';
+                    console.log(`✅ Row ${rowNumber}: ${firstName} ${lastName} imported successfully ${gmailStatus}`);
+                } else {
+                    throw new Error(response.message || 'Unknown error');
+                }
+
+            } catch (error) {
+                failCount++;
+                const empFirstName = getFieldValue(empData, ['Họ và tên đệm', 'Ho va ten dem', 'first_name']) || '';
+                const empLastName = getFieldValue(empData, ['Tên', 'Ten', 'last_name']) || '';
+                const empName = `${empFirstName} ${empLastName}`.trim() || 'N/A';
+                const errorMsg = `Dòng ${rowNumber} (${empName}): ${error.message}`;
+                errors.push(errorMsg);
+                console.error(`❌ ${errorMsg}`);
+            }
+
+            // Small delay to avoid overwhelming the server
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
+        // Hide progress, show results
+        document.getElementById('importProgress').classList.add('hidden');
+        document.getElementById('importResults').classList.remove('hidden');
+
+        // Update results
+        document.getElementById('totalRows').textContent = employeesData.length;
+        document.getElementById('successCount').textContent = successCount;
+        document.getElementById('failCount').textContent = failCount;
+
+        // Show errors if any
+        if (errors.length > 0) {
+            document.getElementById('errorDetails').classList.remove('hidden');
+            const errorList = document.getElementById('errorList');
+            errorList.innerHTML = errors.map(err => `<div>• ${err}</div>`).join('');
+        } else {
+            document.getElementById('errorDetails').classList.add('hidden');
+        }
+
+        // Show summary message
+        if (failCount === 0) {
+            showSuccess(`Nhập thành công ${successCount} nhân viên!`);
+        } else {
+            showError(`Nhập thành công ${successCount}, thất bại ${failCount} nhân viên. Xem chi tiết bên dưới.`);
+        }
+
+        // Reload employee list
+        await loadEmployees();
+
+        // Re-enable button
+        document.getElementById('startImportBtn').disabled = false;
+
+    } catch (error) {
+        console.error('Bulk import failed:', error);
+        document.getElementById('importProgress').classList.add('hidden');
+        document.getElementById('startImportBtn').disabled = false;
+        showError(error.message || 'Có lỗi xảy ra khi nhập nhân viên hàng loạt');
+    }
+}
+
+// Read Excel file
+function readExcelFile(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                // Get first sheet
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert to JSON
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+                console.log('📊 Excel data parsed:', jsonData);
+                resolve(jsonData);
+
+            } catch (error) {
+                console.error('Error parsing Excel file:', error);
+                reject(new Error('Không thể đọc file Excel. Vui lòng kiểm tra định dạng file.'));
+            }
+        };
+
+        reader.onerror = function(error) {
+            console.error('FileReader error:', error);
+            reject(new Error('Không thể đọc file'));
+        };
+
+        reader.readAsArrayBuffer(file);
+    });
+}
+
+// Update progress bar
+function updateProgress(percent, detail) {
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    const progressDetail = document.getElementById('progressDetail');
+
+    if (progressBar) {
+        progressBar.style.width = percent + '%';
+    }
+    if (progressText) {
+        progressText.textContent = Math.round(percent) + '%';
+    }
+    if (progressDetail) {
+        progressDetail.textContent = detail;
+    }
 }

@@ -1,0 +1,126 @@
+<!-- Bulk Import Employee Modal -->
+<div id="bulkImportModal" class="fixed inset-0 z-50 hidden">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-gray-900/50 backdrop-blur-sm backdrop-in" onclick="closeBulkImportModal()"></div>
+
+    <!-- Modal Content -->
+    <div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+        <div class="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden pointer-events-auto modal-in">
+
+            <!-- Header -->
+            <div class="px-8 py-6 border-b border-gray-100 bg-gradient-to-r from-[#FDEDED]/50 to-[#EDFFF0]/50">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-semibold text-gray-800">Nhập nhân viên hàng loạt</h2>
+                        <p class="text-sm text-gray-500 mt-1">Tải lên file Excel để thêm nhiều nhân viên cùng lúc</p>
+                    </div>
+                    <button onclick="closeBulkImportModal()" class="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
+                        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="px-8 py-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+
+                <!-- Instructions -->
+                <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                    <div class="flex items-start gap-3">
+                        <i data-lucide="info" class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0"></i>
+                        <div>
+                            <h3 class="text-sm font-semibold text-blue-800 mb-1">Hướng dẫn sử dụng</h3>
+                            <ul class="text-xs text-blue-700 space-y-1">
+                                <li>• <strong>Cột bắt buộc:</strong> Họ và tên (hoặc Họ và tên đệm + Tên), Mã nhân viên, Chức vụ, Phòng ban</li>
+                                <li>• <strong>Cột tùy chọn:</strong> Email, Số điện thoại, Ngày sinh, Giới tính, Lương, v.v.</li>
+                                <li>• <strong>Email:</strong> Nếu không có email, nhân viên sẽ được đánh dấu "Chưa cập nhật gmail"</li>
+                                <li>• <strong>Tự động tạo phòng ban:</strong> Nếu phòng ban chưa tồn tại, hệ thống sẽ tự động tạo mới</li>
+                                <li>• Mã nhân viên phải là duy nhất, không được trùng</li>
+                                <li>• Định dạng file: .xlsx hoặc .xls (tối đa 10MB)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- File Upload Area -->
+                <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center cursor-pointer hover:border-[#F875AA] hover:bg-gradient-to-br hover:from-[#FDEDED]/30 hover:to-[#EDFFF0]/30 transition-all">
+                    <input type="file" id="excelFileInput" accept=".xlsx,.xls" class="hidden">
+
+                    <div id="uploadPrompt">
+                        <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-[#F875AA]/10 to-[#AEDEFC]/10 flex items-center justify-center">
+                            <i data-lucide="upload" class="w-10 h-10 text-[#F875AA]"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Kéo thả file Excel vào đây</h3>
+                        <p class="text-sm text-gray-500 mb-4">hoặc click để chọn file</p>
+                        <button type="button" onclick="document.getElementById('excelFileInput').click()" class="px-6 py-2.5 bg-gradient-to-r from-[#F875AA] to-[#AEDEFC] text-white rounded-xl font-medium text-sm hover:shadow-lg transition-all">
+                            Chọn file Excel
+                        </button>
+                    </div>
+
+                    <div id="fileSelected" class="hidden">
+                        <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
+                            <i data-lucide="file-check" class="w-10 h-10 text-green-600"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2" id="fileName">File đã chọn</h3>
+                        <p class="text-sm text-gray-500 mb-4" id="fileSize">Kích thước file</p>
+                        <button type="button" onclick="clearSelectedFile()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-300 transition-all">
+                            Chọn file khác
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Progress Bar (Hidden initially) -->
+                <div id="importProgress" class="hidden mt-6">
+                    <div class="mb-2 flex items-center justify-between">
+                        <span class="text-sm font-medium text-gray-700">Đang nhập nhân viên...</span>
+                        <span class="text-sm font-semibold text-[#F875AA]" id="progressText">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                        <div id="progressBar" class="h-full bg-gradient-to-r from-[#F875AA] to-[#AEDEFC] transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2" id="progressDetail">Đang xử lý...</p>
+                </div>
+
+                <!-- Import Results (Hidden initially) -->
+                <div id="importResults" class="hidden mt-6">
+                    <div class="p-4 rounded-xl border-2">
+                        <h3 class="text-sm font-semibold text-gray-800 mb-3">Kết quả nhập liệu</h3>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600">Tổng số dòng:</span>
+                                <span class="text-sm font-semibold" id="totalRows">0</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-green-600">Thành công:</span>
+                                <span class="text-sm font-semibold text-green-600" id="successCount">0</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-red-600">Thất bại:</span>
+                                <span class="text-sm font-semibold text-red-600" id="failCount">0</span>
+                            </div>
+                        </div>
+
+                        <!-- Error Details -->
+                        <div id="errorDetails" class="hidden mt-4 pt-4 border-t">
+                            <h4 class="text-xs font-semibold text-red-600 mb-2">Chi tiết lỗi:</h4>
+                            <div id="errorList" class="max-h-40 overflow-y-auto space-y-1 text-xs text-red-600"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="px-8 py-5 border-t bg-gradient-to-r from-[#FDEDED]/30 to-[#EDFFF0]/30">
+                <div class="flex items-center justify-between">
+                    <button type="button" onclick="closeBulkImportModal()" class="px-6 py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 hover:bg-gray-100 transition-all">
+                        Hủy
+                    </button>
+
+                    <button type="button" id="startImportBtn" onclick="startBulkImport()" disabled class="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#F875AA] to-[#AEDEFC] text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transition-all">
+                        <i data-lucide="upload" class="w-4 h-4"></i> Bắt đầu thêm nhân viên hàng loạt
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -11,6 +11,8 @@
     <script src="/js/api.js"></script>
     <script src="/js/photoHelper.js"></script>
     <script src="/js/navigation.js"></script>
+    <!-- SheetJS for Excel processing -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <style>
         * { font-family: 'Inter', sans-serif; }
         
@@ -264,6 +266,10 @@
                             <i data-lucide="plus" class="w-4 h-4"></i>
                             Thêm nhân viên mới
                         </button>
+                        <button onclick="openBulkImportModal()" class="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#F875AA] to-[#AEDEFC] text-white rounded-xl font-medium text-sm hover:shadow-lg hover:-translate-y-0.5 transition-all">
+                            <i data-lucide="upload" class="w-4 h-4"></i>
+                            Nhập nhân viên hàng loạt
+                        </button>
                     </div>
                 </div>
 
@@ -282,6 +288,14 @@
                 <!-- Employee Grid -->
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
                     <!-- Employee Cards will be rendered dynamically by employees.js -->
+                </div>
+
+                <!-- Delete All Button - Fixed at bottom right -->
+                <div class="fixed bottom-24 right-8 z-30">
+                    <button onclick="deleteAllEmployees()" class="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-medium text-sm hover:shadow-lg hover:-translate-y-0.5 transition-all">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        Xóa tất cả nhân viên
+                    </button>
                 </div>
             </div>
                <!-- Bottom Bar -->
