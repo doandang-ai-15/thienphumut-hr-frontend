@@ -2056,3 +2056,215 @@ function updateProgress(percent, detail) {
         progressDetail.textContent = detail;
     }
 }
+
+// ==================== FORMAT NAMES FUNCTIONALITY ====================
+
+// Detect duplicate name pattern
+function detectDuplicateNames() {
+    const duplicates = [];
+
+    allEmployees.forEach(emp => {
+        const firstName = emp.first_name.trim();
+        const lastName = emp.last_name.trim();
+        const fullName = `${firstName} ${lastName}`;
+
+        // Split full name into words
+        const words = fullName.split(/\s+/);
+
+        // Check if the last word (lastName) appears more than once in the full name
+        const lastNameOccurrences = words.filter(word =>
+            word.toUpperCase() === lastName.toUpperCase()
+        ).length;
+
+        if (lastNameOccurrences > 1) {
+            // Found duplicate - the lastName appears in both firstName and lastName
+            duplicates.push({
+                id: emp.id,
+                employee_id: emp.employee_id,
+                current_first_name: firstName,
+                current_last_name: lastName,
+                current_full_name: fullName,
+                suggested_first_name: firstName.split(/\s+/).slice(0, -1).join(' '),
+                suggested_last_name: lastName,
+                suggested_full_name: `${firstName.split(/\s+/).slice(0, -1).join(' ')} ${lastName}`
+            });
+        }
+    });
+
+    return duplicates;
+}
+
+// Open Format Names Modal
+async function openFormatNamesModal() {
+    showLoading();
+
+    // Detect duplicates
+    const duplicates = detectDuplicateNames();
+
+    hideLoading();
+
+    if (duplicates.length === 0) {
+        showSuccess('Không tìm thấy nhân viên nào có tên bị duplicate! 🎉');
+        return;
+    }
+
+    const modal = `
+        <div id="formatNamesModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 backdrop-in">
+            <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden modal-in">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-[#F875AA] to-[#AEDEFC] p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                                <i data-lucide="sparkles" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-semibold">Format lại tên nhân viên</h2>
+                                <p class="text-white/80 text-sm mt-0.5">Phát hiện ${duplicates.length} nhân viên có tên bị duplicate</p>
+                            </div>
+                        </div>
+                        <button onclick="closeFormatNamesModal()" class="w-8 h-8 hover:bg-white/20 rounded-lg flex items-center justify-center transition-colors">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Content -->
+                <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+                    <div class="space-y-4">
+                        ${duplicates.map((dup, index) => `
+                            <div class="border-2 border-gray-100 rounded-xl p-4 hover:border-[#F875AA]/30 transition-all">
+                                <div class="flex items-start justify-between gap-4">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <span class="text-xs font-medium text-gray-500">MSNV: ${dup.employee_id}</span>
+                                        </div>
+
+                                        <!-- Current Name -->
+                                        <div class="mb-3">
+                                            <p class="text-xs text-red-600 font-medium mb-1">❌ Hiện tại (Duplicate):</p>
+                                            <div class="bg-red-50 rounded-lg p-3 border border-red-200">
+                                                <p class="text-sm text-gray-800">
+                                                    <span class="font-medium">Họ và tên đệm:</span>
+                                                    <span class="text-red-600">${dup.current_first_name}</span>
+                                                </p>
+                                                <p class="text-sm text-gray-800 mt-1">
+                                                    <span class="font-medium">Tên:</span>
+                                                    <span class="text-red-600">${dup.current_last_name}</span>
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Arrow -->
+                                        <div class="flex items-center justify-center my-2">
+                                            <i data-lucide="arrow-down" class="w-5 h-5 text-gray-400"></i>
+                                        </div>
+
+                                        <!-- Suggested Name -->
+                                        <div>
+                                            <p class="text-xs text-green-600 font-medium mb-1">✅ Sau khi format:</p>
+                                            <div class="bg-green-50 rounded-lg p-3 border border-green-200">
+                                                <p class="text-sm text-gray-800">
+                                                    <span class="font-medium">Họ và tên đệm:</span>
+                                                    <span class="text-green-600">${dup.suggested_first_name}</span>
+                                                </p>
+                                                <p class="text-sm text-gray-800 mt-1">
+                                                    <span class="font-medium">Tên:</span>
+                                                    <span class="text-green-600">${dup.suggested_last_name}</span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="border-t border-gray-100 p-6 bg-gray-50">
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm text-gray-600">
+                            <i data-lucide="info" class="w-4 h-4 inline mr-1"></i>
+                            Sẽ format <span class="font-semibold text-[#F875AA]">${duplicates.length} nhân viên</span>
+                        </p>
+                        <div class="flex gap-3">
+                            <button onclick="closeFormatNamesModal()" class="px-5 py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 font-medium hover:bg-gray-100 transition-all">
+                                Hủy
+                            </button>
+                            <button onclick="processFormatNames()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#F875AA] to-[#AEDEFC] text-white font-medium hover:shadow-lg transition-all">
+                                <i data-lucide="sparkles" class="w-4 h-4 inline mr-2"></i>
+                                Tiến hành format
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('modalContainer').innerHTML = modal;
+    lucide.createIcons();
+}
+
+// Close Format Names Modal
+function closeFormatNamesModal() {
+    const modal = document.getElementById('formatNamesModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Process format names
+async function processFormatNames() {
+    const duplicates = detectDuplicateNames();
+
+    if (duplicates.length === 0) {
+        showSuccess('Không có nhân viên nào cần format!');
+        closeFormatNamesModal();
+        return;
+    }
+
+    showLoading();
+
+    let successCount = 0;
+    let failCount = 0;
+    const errors = [];
+
+    for (const dup of duplicates) {
+        try {
+            const updateData = {
+                first_name: dup.suggested_first_name,
+                last_name: dup.suggested_last_name
+            };
+
+            const response = await api.updateEmployee(dup.id, updateData);
+
+            if (response.success) {
+                successCount++;
+            } else {
+                failCount++;
+                errors.push(`${dup.employee_id}: ${response.message}`);
+            }
+        } catch (error) {
+            failCount++;
+            errors.push(`${dup.employee_id}: ${error.message}`);
+        }
+    }
+
+    hideLoading();
+    closeFormatNamesModal();
+
+    // Show result
+    if (successCount > 0) {
+        showSuccess(`✅ Đã format thành công ${successCount} nhân viên!`);
+
+        // Reload employees
+        await loadEmployees();
+    }
+
+    if (failCount > 0) {
+        showError(`❌ Có ${failCount} nhân viên format thất bại. Vui lòng kiểm tra lại.`);
+        console.error('Format errors:', errors);
+    }
+}
