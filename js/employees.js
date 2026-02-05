@@ -13,17 +13,22 @@ let currentFilters = {
     status: 'active'
 };
 let searchDebounceTimer = null; // Debounce timer for search
+let currentPage = 1;
+let itemsPerPage = 50;
+let totalPages = 1;
+let totalEmployees = 0;
 
 // Load ALL employees data once (no filters on API call)
 async function loadEmployees() {
     try {
         showLoading();
 
-        // Fetch ALL employees without filters
-        const response = await api.getEmployees({ status: 'active' });
+        // Fetch ALL employees without filters (use limit: 'all' to get all records)
+        const response = await api.getEmployees({ status: 'active', limit: 'all' });
 
         if (response.success) {
             allEmployees = response.data;
+            totalEmployees = response.total;
             // Apply client-side filters
             applyFilters();
         }
@@ -69,7 +74,137 @@ function applyFilters() {
     }
 
     currentEmployees = filtered;
-    renderEmployees(currentEmployees);
+
+    // Calculate pagination
+    totalEmployees = filtered.length;
+    if (itemsPerPage === 'all') {
+        totalPages = 1;
+        currentPage = 1;
+    } else {
+        totalPages = Math.ceil(totalEmployees / itemsPerPage);
+        // Reset to page 1 if current page exceeds total pages
+        if (currentPage > totalPages && totalPages > 0) {
+            currentPage = 1;
+        }
+    }
+
+    renderEmployeesWithPagination();
+}
+
+// Render employees with pagination
+function renderEmployeesWithPagination() {
+    // Get paginated employees
+    let employeesToShow = currentEmployees;
+    if (itemsPerPage !== 'all') {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        employeesToShow = currentEmployees.slice(startIndex, endIndex);
+    }
+
+    renderEmployees(employeesToShow);
+    updatePaginationControls();
+}
+
+// Update pagination controls
+function updatePaginationControls() {
+    const paginationContainer = document.getElementById('paginationControls');
+    if (!paginationContainer) return;
+
+    // Show/hide pagination based on items per page
+    if (itemsPerPage === 'all' || totalEmployees === 0) {
+        paginationContainer.style.display = 'none';
+        return;
+    }
+    paginationContainer.style.display = 'flex';
+
+    // Update showing text
+    const startIndex = (currentPage - 1) * itemsPerPage + 1;
+    const endIndex = Math.min(currentPage * itemsPerPage, totalEmployees);
+    document.getElementById('showingFrom').textContent = startIndex;
+    document.getElementById('showingTo').textContent = endIndex;
+    document.getElementById('totalEmployees').textContent = totalEmployees;
+
+    // Update previous/next buttons
+    const prevBtn = document.getElementById('prevPageBtn');
+    const nextBtn = document.getElementById('nextPageBtn');
+    if (prevBtn) {
+        prevBtn.disabled = currentPage === 1;
+    }
+    if (nextBtn) {
+        nextBtn.disabled = currentPage === totalPages;
+    }
+
+    // Render page numbers
+    renderPageNumbers();
+}
+
+// Render page numbers
+function renderPageNumbers() {
+    const pageNumbersContainer = document.getElementById('pageNumbers');
+    if (!pageNumbersContainer) return;
+
+    let pages = [];
+
+    // Always show first page
+    pages.push(1);
+
+    // Show pages around current page
+    const range = 2;
+    for (let i = Math.max(2, currentPage - range); i <= Math.min(totalPages - 1, currentPage + range); i++) {
+        if (!pages.includes(i)) {
+            pages.push(i);
+        }
+    }
+
+    // Always show last page
+    if (totalPages > 1 && !pages.includes(totalPages)) {
+        pages.push(totalPages);
+    }
+
+    // Sort pages
+    pages.sort((a, b) => a - b);
+
+    // Build HTML with ellipsis
+    let html = '';
+    for (let i = 0; i < pages.length; i++) {
+        // Add ellipsis if there's a gap
+        if (i > 0 && pages[i] - pages[i - 1] > 1) {
+            html += '<span class="px-2 text-gray-400">...</span>';
+        }
+
+        const isActive = pages[i] === currentPage;
+        const activeClass = isActive
+            ? 'bg-gradient-to-r from-[#F875AA] to-[#AEDEFC] text-white border-transparent'
+            : 'bg-white border-gray-200 text-gray-600 hover:border-[#F875AA]/30 hover:bg-[#FDEDED]/30';
+
+        html += `
+            <button onclick="goToPage(${pages[i]})"
+                    class="px-3 py-2 rounded-lg border text-sm font-medium transition-all ${activeClass}">
+                ${pages[i]}
+            </button>
+        `;
+    }
+
+    pageNumbersContainer.innerHTML = html;
+    lucide.createIcons();
+}
+
+// Go to specific page
+function goToPage(page) {
+    if (page < 1 || page > totalPages) return;
+    currentPage = page;
+    renderEmployeesWithPagination();
+}
+
+// Change items per page
+function changeItemsPerPage() {
+    const select = document.getElementById('itemsPerPage');
+    if (!select) return;
+
+    const value = select.value;
+    itemsPerPage = value === 'all' ? 'all' : parseInt(value);
+    currentPage = 1; // Reset to first page
+    applyFilters(); // This will trigger renderEmployeesWithPagination
 }
 
 // Render employees grid

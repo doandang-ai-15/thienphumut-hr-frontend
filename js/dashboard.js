@@ -18,8 +18,9 @@ async function loadDashboard() {
         updateUserInfo(user);
 
         // Load employees and departments to calculate stats (like departments page)
+        // Use limit: 'all' to get all employees, not just 50
         const [employeesResponse, departmentsResponse] = await Promise.all([
-            api.getEmployees(),
+            api.getEmployees({ limit: 'all' }),
             api.getDepartments()
         ]);
 

@@ -283,11 +283,42 @@
                         <i data-lucide="filter" class="w-4 h-4"></i>
                         Phân lọc
                     </button>
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm text-gray-600">Hiển thị:</span>
+                        <select id="itemsPerPage" onchange="changeItemsPerPage()" class="px-3 py-2.5 rounded-xl border-2 border-gray-100 bg-white/70 focus:border-[#F875AA] focus:outline-none text-sm font-medium">
+                            <option value="1">1</option>
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="50" selected>50</option>
+                            <option value="100">100</option>
+                            <option value="200">200</option>
+                            <option value="all">Tất cả</option>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Employee Grid -->
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
                     <!-- Employee Cards will be rendered dynamically by employees.js -->
+                </div>
+
+                <!-- Pagination Controls -->
+                <div id="paginationControls" class="flex items-center justify-between mt-8 px-4 py-3 bg-white/70 rounded-xl border-2 border-gray-100">
+                    <div class="text-sm text-gray-600">
+                        Hiển thị <span id="showingFrom" class="font-medium">1</span> - <span id="showingTo" class="font-medium">50</span> trong tổng số <span id="totalEmployees" class="font-medium">0</span> nhân viên
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="goToPage(currentPage - 1)" id="prevPageBtn" class="px-3 py-2 rounded-lg bg-white border border-gray-200 text-gray-600 text-sm font-medium hover:border-[#F875AA]/30 hover:bg-[#FDEDED]/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                        </button>
+                        <div id="pageNumbers" class="flex items-center gap-1">
+                            <!-- Page numbers will be rendered here -->
+                        </div>
+                        <button onclick="goToPage(currentPage + 1)" id="nextPageBtn" class="px-3 py-2 rounded-lg bg-white border border-gray-200 text-gray-600 text-sm font-medium hover:border-[#F875AA]/30 hover:bg-[#FDEDED]/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Delete All Button - Fixed at bottom right -->
