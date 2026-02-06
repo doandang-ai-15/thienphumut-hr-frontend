@@ -2057,6 +2057,72 @@ function updateProgress(percent, detail) {
     }
 }
 
+// ==================== UPDATE MAIL STATUS FUNCTIONALITY ====================
+
+// Scan all employees with @noemail.thienphumut.local email and set have_gmail = false
+async function updateMailStatus() {
+    try {
+        showLoading();
+
+        // Find employees whose email ends with @noemail.thienphumut.local and have_gmail is not already false
+        const noMailEmployees = allEmployees.filter(emp => {
+            const email = (emp.email || '').toLowerCase();
+            const hasNoMail = email.endsWith('@noemail.thienphumut.local');
+            const currentlyMarkedAsHavingGmail = emp.have_gmail !== false;
+            return hasNoMail && currentlyMarkedAsHavingGmail;
+        });
+
+        hideLoading();
+
+        if (noMailEmployees.length === 0) {
+            showSuccess('Tất cả nhân viên đã có tình trạng mail chính xác! Không cần cập nhật.');
+            return;
+        }
+
+        // Confirm action
+        if (!confirm(`Tìm thấy ${noMailEmployees.length} nhân viên có email @noemail.thienphumut.local nhưng đang được đánh dấu "Đã có gmail".\n\nBạn có muốn cập nhật tất cả thành "Chưa cập nhật gmail" không?`)) {
+            return;
+        }
+
+        showLoading();
+
+        let successCount = 0;
+        let failCount = 0;
+        const errors = [];
+
+        for (const emp of noMailEmployees) {
+            try {
+                const response = await api.updateEmployee(emp.id, { have_gmail: false });
+                if (response.success) {
+                    successCount++;
+                } else {
+                    failCount++;
+                    errors.push(`${emp.employee_id}: ${response.message}`);
+                }
+            } catch (error) {
+                failCount++;
+                errors.push(`${emp.employee_id}: ${error.message}`);
+            }
+        }
+
+        hideLoading();
+
+        if (successCount > 0) {
+            showSuccess(`Đã cập nhật ${successCount} nhân viên thành "Chưa cập nhật gmail"!`);
+            await loadEmployees();
+        }
+
+        if (failCount > 0) {
+            showError(`Có ${failCount} nhân viên cập nhật thất bại. Vui lòng kiểm tra lại.`);
+            console.error('Update mail status errors:', errors);
+        }
+    } catch (error) {
+        hideLoading();
+        console.error('Failed to update mail status:', error);
+        showError('Không thể cập nhật tình trạng mail');
+    }
+}
+
 // ==================== FORMAT NAMES FUNCTIONALITY ====================
 
 // Detect duplicate name pattern
