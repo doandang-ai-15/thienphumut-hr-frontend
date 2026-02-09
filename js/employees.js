@@ -2339,31 +2339,58 @@ async function processFormatNames() {
 // ==================== FORMAT EMPLOYEE CODE VALIDATION ====================
 
 async function formatEmployeeCode() {
+    console.log('🚀 [FRONTEND STEP 1] formatEmployeeCode() called');
+
     showLoading();
+    console.log('⏳ [FRONTEND STEP 2] Loading screen shown');
 
     try {
+        console.log('📡 [FRONTEND STEP 3] Calling API: /employees/validate-codes');
         const response = await api.get('/employees/validate-codes');
+        console.log('✅ [FRONTEND STEP 4] API response received:', response);
 
         hideLoading();
+        console.log('✅ [FRONTEND STEP 5] Loading screen hidden');
 
         if (!response.success) {
+            console.error('❌ [FRONTEND STEP 6] Response success is false:', response);
             showError('❌ Không thể đọc file DS CNV hoặc database');
             return;
         }
 
+        console.log('📊 [FRONTEND STEP 7] Extracting data from response');
         const { summary, mismatches, notFoundInDB, notFoundInFile } = response;
+        console.log('📊 [FRONTEND STEP 8] Summary:', summary);
+        console.log('📊 [FRONTEND STEP 9] Mismatches count:', mismatches?.length || 0);
+        console.log('📊 [FRONTEND STEP 10] NotFoundInDB count:', notFoundInDB?.length || 0);
+        console.log('📊 [FRONTEND STEP 11] NotFoundInFile count:', notFoundInFile?.length || 0);
 
         // Show modal with results
+        console.log('🎨 [FRONTEND STEP 12] Showing modal...');
         showEmployeeCodeValidationModal(summary, mismatches, notFoundInDB, notFoundInFile);
+        console.log('✅ [FRONTEND STEP 13] Modal shown successfully');
 
     } catch (error) {
         hideLoading();
-        console.error('Failed to validate employee codes:', error);
+        console.error('❌ [FRONTEND ERROR] Failed to validate employee codes:', error);
+        console.error('❌ [FRONTEND ERROR] Error type:', error.constructor.name);
+        console.error('❌ [FRONTEND ERROR] Error message:', error.message);
+        console.error('❌ [FRONTEND ERROR] Error stack:', error.stack);
+
+        if (error.response) {
+            console.error('❌ [FRONTEND ERROR] Response status:', error.response.status);
+            console.error('❌ [FRONTEND ERROR] Response data:', error.response.data);
+        }
+
         showError('❌ Lỗi khi validate mã nhân viên: ' + error.message);
     }
 }
 
 function showEmployeeCodeValidationModal(summary, mismatches, notFoundInDB, notFoundInFile) {
+    // Store mismatches globally for update function
+    currentMismatches = mismatches;
+    console.log('💾 [MODAL] Stored mismatches:', currentMismatches.length);
+
     const mismatchesHTML = mismatches.length > 0 ? `
     <div class="mb-6">
         <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
@@ -2506,10 +2533,21 @@ function showEmployeeCodeValidationModal(summary, mismatches, notFoundInDB, notF
                     ${allMatchedHTML}
                 </div>
 
-                <div class="p-6 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
-                    <button onclick="closeEmployeeCodeValidationModal()" class="px-6 py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors">
-                        Đóng
-                    </button>
+                <div class="p-6 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                    <div class="text-sm text-gray-600">
+                        ${mismatches.length > 0 ? `<span class="font-medium text-yellow-600">${mismatches.length} mã không khớp</span> cần được cập nhật` : ''}
+                    </div>
+                    <div class="flex gap-3">
+                        ${mismatches.length > 0 ? `
+                        <button onclick="updateAllEmployeeCodes()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-medium hover:shadow-lg transition-all flex items-center gap-2">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                            Cập nhật tất cả
+                        </button>
+                        ` : ''}
+                        <button onclick="closeEmployeeCodeValidationModal()" class="px-6 py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors">
+                            Đóng
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2523,5 +2561,65 @@ function closeEmployeeCodeValidationModal() {
     const modal = document.getElementById('employeeCodeValidationModal');
     if (modal) {
         modal.remove();
+    }
+}
+
+// Store mismatches globally for update function
+let currentMismatches = [];
+
+async function updateAllEmployeeCodes() {
+    if (currentMismatches.length === 0) {
+        showError('Không có mã nhân viên nào cần cập nhật');
+        return;
+    }
+
+    // Confirm before update
+    const confirmMsg = `Bạn có chắc muốn cập nhật ${currentMismatches.length} mã nhân viên từ DS CNV vào database?\n\nHành động này sẽ thay đổi dữ liệu trong database!`;
+    if (!confirm(confirmMsg)) {
+        return;
+    }
+
+    console.log('🔄 [UPDATE FRONTEND] Starting update process...');
+    showLoading();
+
+    try {
+        console.log('📡 [UPDATE FRONTEND] Calling API: /employees/update-codes');
+        console.log('📊 [UPDATE FRONTEND] Mismatches to update:', currentMismatches);
+
+        const response = await api.post('/employees/update-codes', {
+            mismatches: currentMismatches
+        });
+
+        console.log('✅ [UPDATE FRONTEND] API response:', response);
+        hideLoading();
+
+        if (response.success) {
+            const { results } = response;
+            console.log(`✅ [UPDATE FRONTEND] Update completed: ${results.successCount} success, ${results.failedCount} failed`);
+
+            // Close current modal
+            closeEmployeeCodeValidationModal();
+
+            // Show success message
+            showSuccess(`✅ Đã cập nhật thành công ${results.successCount} mã nhân viên!`);
+
+            // If there were failures, show them
+            if (results.failedCount > 0) {
+                console.error('❌ [UPDATE FRONTEND] Failed updates:', results.failed);
+                showError(`⚠️ Có ${results.failedCount} mã nhân viên cập nhật thất bại. Vui lòng kiểm tra console.`);
+            }
+
+            // Re-run validation to show new results
+            setTimeout(() => {
+                formatEmployeeCode();
+            }, 1500);
+        } else {
+            showError('❌ Cập nhật thất bại: ' + (response.error || 'Unknown error'));
+        }
+
+    } catch (error) {
+        hideLoading();
+        console.error('❌ [UPDATE FRONTEND ERROR] Failed to update employee codes:', error);
+        showError('❌ Lỗi khi cập nhật mã nhân viên: ' + error.message);
     }
 }
