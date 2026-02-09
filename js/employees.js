@@ -2334,3 +2334,194 @@ async function processFormatNames() {
         console.error('Format errors:', errors);
     }
 }
+// This file will be appended to employees.js
+
+// ==================== FORMAT EMPLOYEE CODE VALIDATION ====================
+
+async function formatEmployeeCode() {
+    showLoading();
+
+    try {
+        const response = await api.get('/employees/validate-codes');
+
+        hideLoading();
+
+        if (!response.success) {
+            showError('❌ Không thể đọc file DS CNV hoặc database');
+            return;
+        }
+
+        const { summary, mismatches, notFoundInDB, notFoundInFile } = response;
+
+        // Show modal with results
+        showEmployeeCodeValidationModal(summary, mismatches, notFoundInDB, notFoundInFile);
+
+    } catch (error) {
+        hideLoading();
+        console.error('Failed to validate employee codes:', error);
+        showError('❌ Lỗi khi validate mã nhân viên: ' + error.message);
+    }
+}
+
+function showEmployeeCodeValidationModal(summary, mismatches, notFoundInDB, notFoundInFile) {
+    const mismatchesHTML = mismatches.length > 0 ? `
+    <div class="mb-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+            <i data-lucide="alert-triangle" class="w-5 h-5 text-yellow-500"></i>
+            Mã nhân viên không khớp (${mismatches.length})
+        </h3>
+        <div class="space-y-2">
+            ${mismatches.map(m => `
+                <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <div class="font-medium text-gray-800">${m.fullName}</div>
+                            <div class="text-sm text-gray-600 mt-1">Row ${m.row} trong DS CNV</div>
+                        </div>
+                        <div class="flex gap-6 text-sm">
+                            <div>
+                                <div class="text-xs text-gray-500">File DS CNV</div>
+                                <div class="font-mono font-semibold text-orange-600">${m.fileCode}</div>
+                            </div>
+                            <div class="text-gray-400 self-center">→</div>
+                            <div>
+                                <div class="text-xs text-gray-500">Database</div>
+                                <div class="font-mono font-semibold text-blue-600">${m.dbCode}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    </div>
+    ` : '';
+
+    const notFoundInDBHTML = notFoundInDB.length > 0 ? `
+    <div class="mb-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+            <i data-lucide="user-x" class="w-5 h-5 text-red-500"></i>
+            Không tìm thấy trong Database (${notFoundInDB.length})
+        </h3>
+        <div class="space-y-2">
+            ${notFoundInDB.map(n => `
+                <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="font-medium text-gray-800">${n.fullName}</div>
+                            <div class="text-sm text-gray-600 mt-1">Mã: <span class="font-mono">${n.fileCode}</span> - Row ${n.row}</div>
+                        </div>
+                        <div class="text-xs text-red-600 bg-red-100 px-3 py-1 rounded-full">
+                            Chưa có trong DB
+                        </div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    </div>
+    ` : '';
+
+    const notFoundInFileHTML = notFoundInFile.length > 0 ? `
+    <div class="mb-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+            <i data-lucide="file-x" class="w-5 h-5 text-purple-500"></i>
+            Không có trong DS CNV (${notFoundInFile.length})
+        </h3>
+        <div class="space-y-2">
+            ${notFoundInFile.map(n => `
+                <div class="bg-purple-50 border border-purple-200 rounded-xl p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="font-medium text-gray-800">${n.fullName}</div>
+                            <div class="text-sm text-gray-600 mt-1">Mã: <span class="font-mono">${n.dbCode}</span></div>
+                        </div>
+                        <div class="text-xs text-purple-600 bg-purple-100 px-3 py-1 rounded-full">
+                            Chưa có trong DS CNV
+                        </div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    </div>
+    ` : '';
+
+    const allMatchedHTML = mismatches.length === 0 && notFoundInDB.length === 0 && notFoundInFile.length === 0 ? `
+    <div class="text-center py-12">
+        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i data-lucide="check-circle" class="w-10 h-10 text-green-500"></i>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-800 mb-2">Tất cả đều khớp! 🎉</h3>
+        <p class="text-gray-600">Không có mã nhân viên nào bị sai lệch giữa file DS CNV và Database.</p>
+    </div>
+    ` : '';
+
+    const modal = `
+        <div id="employeeCodeValidationModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 backdrop-in">
+            <div class="bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden modal-in">
+                <div class="bg-gradient-to-r from-[#F875AA] to-[#AEDEFC] p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                                <i data-lucide="hash" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-semibold">Kết quả kiểm tra mã nhân viên</h2>
+                                <p class="text-white/80 text-sm mt-0.5">So sánh giữa file DS CNV và Database</p>
+                            </div>
+                        </div>
+                        <button onclick="closeEmployeeCodeValidationModal()" class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-6 border-b border-gray-200">
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <div class="bg-blue-50 rounded-xl p-4 text-center">
+                            <div class="text-2xl font-bold text-blue-600">${summary.totalInFile}</div>
+                            <div class="text-xs text-gray-600 mt-1">Tổng DS CNV</div>
+                        </div>
+                        <div class="bg-green-50 rounded-xl p-4 text-center">
+                            <div class="text-2xl font-bold text-green-600">${summary.totalInDB}</div>
+                            <div class="text-xs text-gray-600 mt-1">Tổng Database</div>
+                        </div>
+                        <div class="bg-emerald-50 rounded-xl p-4 text-center">
+                            <div class="text-2xl font-bold text-emerald-600">${summary.matchedCorrectly}</div>
+                            <div class="text-xs text-gray-600 mt-1">Khớp đúng</div>
+                        </div>
+                        <div class="bg-yellow-50 rounded-xl p-4 text-center">
+                            <div class="text-2xl font-bold text-yellow-600">${summary.mismatches}</div>
+                            <div class="text-xs text-gray-600 mt-1">Mã không khớp</div>
+                        </div>
+                        <div class="bg-red-50 rounded-xl p-4 text-center">
+                            <div class="text-2xl font-bold text-red-600">${summary.notFoundInDB + summary.notFoundInFile}</div>
+                            <div class="text-xs text-gray-600 mt-1">Không tìm thấy</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6 overflow-y-auto" style="max-height: calc(90vh - 300px);">
+                    ${mismatchesHTML}
+                    ${notFoundInDBHTML}
+                    ${notFoundInFileHTML}
+                    ${allMatchedHTML}
+                </div>
+
+                <div class="p-6 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
+                    <button onclick="closeEmployeeCodeValidationModal()" class="px-6 py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors">
+                        Đóng
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modal);
+    lucide.createIcons();
+}
+
+function closeEmployeeCodeValidationModal() {
+    const modal = document.getElementById('employeeCodeValidationModal');
+    if (modal) {
+        modal.remove();
+    }
+}
