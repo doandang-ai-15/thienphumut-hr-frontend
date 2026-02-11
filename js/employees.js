@@ -2678,15 +2678,20 @@ function showExportAllEmployeesModal(employees) {
     // Store sorted employees globally for export function
     window.exportEmployeesList = sortedEmployees;
 
-    const employeeRows = sortedEmployees.map((emp, index) => `
+    const employeeRows = sortedEmployees.map((emp, index) => {
+        // Filter out emails with @thienphumut.local suffix
+        const displayEmail = (emp.email && emp.email.endsWith('@thienphumut.local')) ? '' : (emp.email || '');
+
+        return `
         <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
             <td class="px-4 py-3 text-center text-sm text-gray-600">${index + 1}</td>
             <td class="px-4 py-3 text-sm font-medium text-gray-800">${emp.first_name || '-'}</td>
             <td class="px-4 py-3 text-sm font-medium text-gray-800">${emp.last_name || '-'}</td>
             <td class="px-4 py-3 text-sm text-gray-600 font-mono">${emp.employee_id || '-'}</td>
-            <td class="px-4 py-3 text-sm text-gray-600">${emp.email || '-'}</td>
+            <td class="px-4 py-3 text-sm text-gray-600">${displayEmail || '-'}</td>
         </tr>
-    `).join('');
+        `;
+    }).join('');
 
     const modal = `
         <div id="exportAllEmployeesModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 backdrop-in">
@@ -2770,13 +2775,18 @@ async function exportToExcel() {
 
     try {
         // Prepare data for Excel
-        const data = window.exportEmployeesList.map((emp, index) => ({
-            'STT': index + 1,
-            'Họ và tên đệm': emp.first_name || '',
-            'Tên': emp.last_name || '',
-            'Mã nhân viên': emp.employee_id || '',
-            'Gmail': emp.email || ''
-        }));
+        const data = window.exportEmployeesList.map((emp, index) => {
+            // Filter out emails with @thienphumut.local suffix
+            const displayEmail = (emp.email && emp.email.endsWith('@thienphumut.local')) ? '' : (emp.email || '');
+
+            return {
+                'STT': index + 1,
+                'Họ và tên đệm': emp.first_name || '',
+                'Tên': emp.last_name || '',
+                'Mã nhân viên': emp.employee_id || '',
+                'Gmail': displayEmail
+            };
+        });
 
         console.log('📊 [EXPORT] Prepared', data.length, 'rows for export');
 
