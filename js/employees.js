@@ -2633,17 +2633,29 @@ async function openExportAllEmployeesModal() {
     try {
         // Fetch all employees from database
         const response = await api.get('/employees?limit=all');
-        console.log('✅ [EXPORT] Fetched employees:', response.length);
+        console.log('✅ [EXPORT] API Response:', response);
+        console.log('✅ [EXPORT] Response type:', typeof response);
+        console.log('✅ [EXPORT] Is Array?', Array.isArray(response));
+
+        // Extract employees array from response
+        let employees = response;
+        if (response.data) {
+            employees = response.data;
+        } else if (response.employees) {
+            employees = response.employees;
+        }
+
+        console.log('✅ [EXPORT] Fetched employees:', employees.length);
 
         hideLoading();
 
-        if (!response || response.length === 0) {
+        if (!employees || !Array.isArray(employees) || employees.length === 0) {
             showError('❌ Không có nhân viên nào trong database');
             return;
         }
 
         // Show modal with employee list
-        showExportAllEmployeesModal(response);
+        showExportAllEmployeesModal(employees);
 
     } catch (error) {
         hideLoading();
