@@ -2667,10 +2667,18 @@ async function openExportAllEmployeesModal() {
 function showExportAllEmployeesModal(employees) {
     console.log('🎨 [EXPORT] Rendering modal with', employees.length, 'employees');
 
-    // Store employees globally for export function
-    window.exportEmployeesList = employees;
+    // Sort employees by last_name (Tên) alphabetically
+    const sortedEmployees = [...employees].sort((a, b) => {
+        const nameA = (a.last_name || '').toUpperCase();
+        const nameB = (b.last_name || '').toUpperCase();
+        return nameA.localeCompare(nameB, 'vi');
+    });
+    console.log('✅ [EXPORT] Sorted employees by last_name (Tên) alphabetically');
 
-    const employeeRows = employees.map((emp, index) => `
+    // Store sorted employees globally for export function
+    window.exportEmployeesList = sortedEmployees;
+
+    const employeeRows = sortedEmployees.map((emp, index) => `
         <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
             <td class="px-4 py-3 text-center text-sm text-gray-600">${index + 1}</td>
             <td class="px-4 py-3 text-sm font-medium text-gray-800">${emp.first_name || '-'}</td>
@@ -2692,7 +2700,7 @@ function showExportAllEmployeesModal(employees) {
                             </div>
                             <div>
                                 <h2 class="text-xl font-semibold">Xuất tất cả nhân viên</h2>
-                                <p class="text-white/80 text-sm mt-0.5">Tổng số: ${employees.length} nhân viên</p>
+                                <p class="text-white/80 text-sm mt-0.5">Tổng số: ${sortedEmployees.length} nhân viên (sắp xếp A-Z theo Tên)</p>
                             </div>
                         </div>
                         <button onclick="closeExportAllEmployeesModal()" class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors">
@@ -2724,7 +2732,7 @@ function showExportAllEmployeesModal(employees) {
                 <!-- Footer -->
                 <div class="p-6 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
                     <div class="text-sm text-gray-600">
-                        <span class="font-medium text-green-600">${employees.length} nhân viên</span> sẵn sàng xuất
+                        <span class="font-medium text-green-600">${sortedEmployees.length} nhân viên</span> sẵn sàng xuất
                     </div>
                     <div class="flex gap-3">
                         <button onclick="exportToExcel()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-white font-medium hover:shadow-lg transition-all flex items-center gap-2">
