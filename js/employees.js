@@ -2623,3 +2623,176 @@ async function updateAllEmployeeCodes() {
         showError('❌ Lỗi khi cập nhật mã nhân viên: ' + error.message);
     }
 }
+
+// ==================== EXPORT ALL EMPLOYEES ====================
+
+async function openExportAllEmployeesModal() {
+    console.log('📊 [EXPORT] Opening export all employees modal...');
+    showLoading();
+
+    try {
+        // Fetch all employees from database
+        const response = await api.get('/employees?limit=all');
+        console.log('✅ [EXPORT] Fetched employees:', response.length);
+
+        hideLoading();
+
+        if (!response || response.length === 0) {
+            showError('❌ Không có nhân viên nào trong database');
+            return;
+        }
+
+        // Show modal with employee list
+        showExportAllEmployeesModal(response);
+
+    } catch (error) {
+        hideLoading();
+        console.error('❌ [EXPORT ERROR] Failed to fetch employees:', error);
+        showError('❌ Lỗi khi lấy danh sách nhân viên: ' + error.message);
+    }
+}
+
+function showExportAllEmployeesModal(employees) {
+    console.log('🎨 [EXPORT] Rendering modal with', employees.length, 'employees');
+
+    // Store employees globally for export function
+    window.exportEmployeesList = employees;
+
+    const employeeRows = employees.map((emp, index) => `
+        <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+            <td class="px-4 py-3 text-center text-sm text-gray-600">${index + 1}</td>
+            <td class="px-4 py-3 text-sm font-medium text-gray-800">${emp.first_name || '-'}</td>
+            <td class="px-4 py-3 text-sm font-medium text-gray-800">${emp.last_name || '-'}</td>
+            <td class="px-4 py-3 text-sm text-gray-600 font-mono">${emp.employee_id || '-'}</td>
+            <td class="px-4 py-3 text-sm text-gray-600">${emp.email || '-'}</td>
+        </tr>
+    `).join('');
+
+    const modal = `
+        <div id="exportAllEmployeesModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 backdrop-in">
+            <div class="bg-white rounded-3xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden modal-in">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-green-500 to-emerald-500 p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                                <i data-lucide="file-spreadsheet" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-semibold">Xuất tất cả nhân viên</h2>
+                                <p class="text-white/80 text-sm mt-0.5">Tổng số: ${employees.length} nhân viên</p>
+                            </div>
+                        </div>
+                        <button onclick="closeExportAllEmployeesModal()" class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="p-6 overflow-y-auto" style="max-height: calc(90vh - 220px);">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-100 sticky top-0">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">STT</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Họ và tên đệm</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tên</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Mã nhân viên</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Gmail</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${employeeRows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="p-6 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                    <div class="text-sm text-gray-600">
+                        <span class="font-medium text-green-600">${employees.length} nhân viên</span> sẵn sàng xuất
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="exportToExcel()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-white font-medium hover:shadow-lg transition-all flex items-center gap-2">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            Xuất file Excel
+                        </button>
+                        <button onclick="closeExportAllEmployeesModal()" class="px-6 py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors">
+                            Đóng
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modal);
+    lucide.createIcons();
+}
+
+function closeExportAllEmployeesModal() {
+    const modal = document.getElementById('exportAllEmployeesModal');
+    if (modal) {
+        modal.remove();
+    }
+    window.exportEmployeesList = null;
+}
+
+async function exportToExcel() {
+    console.log('📥 [EXPORT] Starting Excel export...');
+
+    if (!window.exportEmployeesList || window.exportEmployeesList.length === 0) {
+        showError('❌ Không có dữ liệu để xuất');
+        return;
+    }
+
+    try {
+        // Prepare data for Excel
+        const data = window.exportEmployeesList.map((emp, index) => ({
+            'STT': index + 1,
+            'Họ và tên đệm': emp.first_name || '',
+            'Tên': emp.last_name || '',
+            'Mã nhân viên': emp.employee_id || '',
+            'Gmail': emp.email || ''
+        }));
+
+        console.log('📊 [EXPORT] Prepared', data.length, 'rows for export');
+
+        // Create worksheet
+        const ws = XLSX.utils.json_to_sheet(data);
+
+        // Set column widths
+        ws['!cols'] = [
+            { wch: 5 },  // STT
+            { wch: 25 }, // Họ và tên đệm
+            { wch: 15 }, // Tên
+            { wch: 15 }, // Mã nhân viên
+            { wch: 30 }  // Gmail
+        ];
+
+        // Create workbook
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Danh sách nhân viên');
+
+        // Generate filename with timestamp
+        const timestamp = new Date().toISOString().slice(0, 10);
+        const filename = `Danh_sach_nhan_vien_${timestamp}.xlsx`;
+
+        // Download file
+        XLSX.writeFile(wb, filename);
+
+        console.log('✅ [EXPORT] Excel file downloaded:', filename);
+        showSuccess(`✅ Đã xuất thành công ${data.length} nhân viên!`);
+
+        // Close modal after successful export
+        setTimeout(() => {
+            closeExportAllEmployeesModal();
+        }, 1000);
+
+    } catch (error) {
+        console.error('❌ [EXPORT ERROR] Failed to export Excel:', error);
+        showError('❌ Lỗi khi xuất file Excel: ' + error.message);
+    }
+}
