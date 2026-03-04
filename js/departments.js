@@ -350,8 +350,12 @@ function showDepartmentDetailModal(department) {
                 </div>
             </div>
 
-            <div class="px-8 py-5 border-t border-gray-100 bg-gray-50">
-                <button onclick="closeDepartmentDetailModal()" class="w-full py-3 bg-gradient-to-r from-[#F875AA] to-[#AEDEFC] text-white rounded-xl font-medium hover:shadow-lg transition-all">
+            <div class="px-8 py-5 border-t border-gray-100 bg-gray-50 flex gap-3">
+                <button onclick="deleteDepartment(${department.id}, '${department.name.replace(/'/g, "\\'")}')" class="px-5 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-medium hover:shadow-lg transition-all flex items-center gap-2">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    Xoá phòng ban
+                </button>
+                <button onclick="closeDepartmentDetailModal()" class="flex-1 py-3 bg-gradient-to-r from-[#F875AA] to-[#AEDEFC] text-white rounded-xl font-medium hover:shadow-lg transition-all">
                     Close
                 </button>
             </div>
@@ -689,6 +693,30 @@ async function removeEmployeeFromDepartment(departmentId, employeeId, employeeNa
         hideLoading();
         console.error('Failed to remove employee:', error);
         showError(error.message || 'Không thể xoá nhân viên khỏi phòng ban');
+    }
+}
+
+// Delete department
+async function deleteDepartment(departmentId, departmentName) {
+    if (!confirm(`Bạn có chắc chắn muốn xoá phòng ban "${departmentName}" không?\n\nLưu ý: Chỉ có thể xoá phòng ban không có nhân viên.`)) {
+        return;
+    }
+
+    try {
+        showLoading();
+
+        const response = await api.deleteDepartment(departmentId);
+
+        if (response.success) {
+            hideLoading();
+            showSuccess(`Đã xoá phòng ban "${departmentName}" thành công!`);
+            closeDepartmentDetailModal();
+            await loadDepartments();
+        }
+    } catch (error) {
+        hideLoading();
+        console.error('Failed to delete department:', error);
+        showError(error.message || 'Không thể xoá phòng ban. Vui lòng chuyển nhân viên sang phòng ban khác trước.');
     }
 }
 

@@ -236,6 +236,94 @@ function updateNewEmployeesChart(data) {
     });
 }
 
+// ─── Custom HTML legend plugin (3-column grid below the donut) ───────────────
+function _getDeptLegendUl(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return null;
+    let ul = container.querySelector('ul');
+    if (!ul) {
+        ul = document.createElement('ul');
+        ul.style.cssText = [
+            'display:grid',
+            'grid-template-columns:repeat(3,1fr)',
+            'gap:6px 12px',
+            'margin:0',
+            'padding:0',
+            'list-style:none'
+        ].join(';');
+        container.appendChild(ul);
+    }
+    return ul;
+}
+
+const deptLegendPlugin = {
+    id: 'deptHtmlLegend',
+    afterUpdate(chart, _args, options) {
+        const ul = _getDeptLegendUl(options.containerId);
+        if (!ul) return;
+        // Clear previous items
+        while (ul.firstChild) ul.firstChild.remove();
+
+        // Read labels & colors directly from chart.data (safe, no generateLabels dependency)
+        const chartLabels = chart.data.labels || [];
+        const dataset = chart.data.datasets[0] || {};
+        const bgColors = dataset.backgroundColor || [];
+
+        chartLabels.forEach((labelText, index) => {
+            const isHidden = chart.getDataVisibility(index) === false;
+            const color = Array.isArray(bgColors) ? (bgColors[index] || '#F875AA') : bgColors;
+
+            const li = document.createElement('li');
+            li.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;min-width:0;';
+            li.title = labelText;
+            li.onclick = () => { chart.toggleDataVisibility(index); chart.update(); };
+
+            const dot = document.createElement('span');
+            dot.style.cssText = `width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0;opacity:${isHidden ? 0.3 : 1};`;
+
+            const labelEl = document.createElement('span');
+            labelEl.style.cssText = `color:#6b7280;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:${isHidden ? 0.4 : 1};`;
+            labelEl.textContent = labelText;
+
+            li.appendChild(dot);
+            li.appendChild(labelEl);
+            ul.appendChild(li);
+        });
+    }
+};
+
+// Assign a unique color to every department regardless of what's stored in DB
+function assignUniqueColors(departments) {
+    const palette = [
+        '#F875AA', '#34D399', '#FBBF24', '#A78BFA', '#F97316',
+        '#06B6D4', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444',
+        '#14B8A6', '#6366F1', '#84CC16', '#FB923C', '#EC4899',
+        '#AEDEFC', '#4ADE80', '#60A5FA', '#E879F9', '#FCD34D',
+        '#2DD4BF', '#F43F5E', '#818CF8', '#A3E635', '#38BDF8'
+    ];
+    const usedColors = new Set();
+
+    return departments.map((d, index) => {
+        // Only keep the stored color if it's genuinely unique (not already taken by a prior dept)
+        if (d.color && !usedColors.has(d.color)) {
+            usedColors.add(d.color);
+            return d.color;
+        }
+        // Find the next palette color not yet used, starting from the dept's index position
+        for (let offset = 0; offset < palette.length; offset++) {
+            const candidate = palette[(index + offset) % palette.length];
+            if (!usedColors.has(candidate)) {
+                usedColors.add(candidate);
+                return candidate;
+            }
+        }
+        // Absolute fallback (> 25 depts with identical stored colors — extremely unlikely)
+        const fallback = `hsl(${(index * 37) % 360}, 70%, 60%)`;
+        usedColors.add(fallback);
+        return fallback;
+    });
+}
+
 // Update department distribution chart
 function updateDepartmentChart(data) {
     const ctx = document.getElementById('departmentChart');
@@ -243,10 +331,11 @@ function updateDepartmentChart(data) {
 
     const labels = data.map(d => d.name);
     const values = data.map(d => parseInt(d.employee_count) || 0);
-    const colors = data.map(d => d.color || '#F875AA');
+    const colors = assignUniqueColors(data);
 
     new Chart(ctx, {
         type: 'doughnut',
+        plugins: [deptLegendPlugin],          // register local plugin
         data: {
             labels: labels,
             datasets: [{
@@ -260,17 +349,14 @@ function updateDepartmentChart(data) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            cutout: '65%',
+            cutout: '62%',
+            layout: { padding: 8 },
             plugins: {
                 legend: {
-                    position: 'right',
-                    labels: {
-                        padding: 15,
-                        usePointStyle: true,
-                        pointStyle: 'circle',
-                        color: '#6b7280',
-                        font: { size: 12 }
-                    }
+                    display: false           // hide built-in legend; HTML legend handles it
+                },
+                deptHtmlLegend: {
+                    containerId: 'departmentChartLegend'
                 },
                 tooltip: {
                     backgroundColor: 'white',

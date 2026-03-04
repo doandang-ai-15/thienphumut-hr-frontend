@@ -1824,6 +1824,14 @@ async function startBulkImport() {
             return null;
         };
 
+        // Color palette for auto-created departments (distinct, visually appealing colors)
+        const deptColorPalette = [
+            '#F875AA', '#AEDEFC', '#34D399', '#FBBF24', '#A78BFA',
+            '#F97316', '#06B6D4', '#EC4899', '#10B981', '#F59E0B',
+            '#8B5CF6', '#EF4444', '#14B8A6', '#6366F1', '#84CC16', '#FB923C'
+        ];
+        let autoColorIndex = 0;
+
         // Import employees one by one
         let successCount = 0;
         let failCount = 0;
@@ -1890,16 +1898,19 @@ async function startBulkImport() {
                     updateProgress(progress, `Đang tạo phòng ban mới: ${department}`);
 
                     try {
+                        const assignedColor = deptColorPalette[autoColorIndex % deptColorPalette.length];
                         const createDeptResponse = await api.createDepartment({
                             name: department,
-                            description: `Tự động tạo từ import nhân viên hàng loạt`
+                            description: `Tự động tạo từ import nhân viên hàng loạt`,
+                            color: assignedColor
                         });
 
                         if (createDeptResponse.success) {
                             departmentId = createDeptResponse.data.id;
                             // Update department map
                             deptMap[deptName] = departmentId;
-                            console.log(`✅ Created department "${department}" with ID: ${departmentId}`);
+                            autoColorIndex++; // Advance palette index for next new department
+                            console.log(`✅ Created department "${department}" with ID: ${departmentId}, color: ${assignedColor}`);
 
                             // Show notification to user
                             showSuccess(`Đã tạo phòng ban mới: "${department}"`);

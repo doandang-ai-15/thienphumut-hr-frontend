@@ -160,7 +160,7 @@
             <!-- Charts Row -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                 <!-- New Employees Chart -->
-                <div class="card-hover bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 animate-fade-in" style="animation-delay: 0.5s">
+                <div class="card-hover bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 animate-fade-in flex flex-col" style="animation-delay: 0.5s">
                     <div class="flex items-center justify-between mb-6">
                         <div>
                             <h3 class="font-semibold text-gray-800 tracking-tight">Biểu đồ nhân viên mới</h3>
@@ -171,7 +171,7 @@
                             Belongs to Thien Phu Mut
                         </div>
                     </div>
-                    <div class="h-64">
+                    <div class="flex-1 min-h-0 relative">
                         <canvas id="newEmployeesChart"></canvas>
                     </div>
                 </div>
@@ -183,13 +183,13 @@
                             <h3 class="font-semibold text-gray-800 tracking-tight">Sơ đồ tổng quát công ty Thiên Phú Mút</h3>
                             <p class="text-sm text-gray-500">Dựa trên phòng ban</p>
                         </div>
-                        <!-- <button class="p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                            <i data-lucide="more-horizontal" class="w-5 h-5 text-gray-400"></i>
-                        </button> -->
                     </div>
-                    <div class="h-64 flex items-center justify-center">
+                    <!-- Canvas: fills full card width, fixed height for donut only -->
+                    <div class="relative w-full" style="height: 200px;">
                         <canvas id="departmentChart"></canvas>
                     </div>
+                    <!-- HTML legend rendered as 3-column grid below the donut -->
+                    <div id="departmentChartLegend" class="mt-4"></div>
                 </div>
             </div>
 
