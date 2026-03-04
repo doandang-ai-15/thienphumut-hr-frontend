@@ -111,6 +111,15 @@
                     <p class="text-gray-500 text-sm mt-1">Tải lên và xử lý bảng lương nhân viên hiệu quả</p>
                 </div>
 
+                <!-- Import History Button -->
+                <button id="btnImportHistory"
+                    onclick="openImportHistoryModal()"
+                    class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/70 backdrop-blur-sm border border-gray-100 shadow-sm text-sm font-medium text-gray-700 hover:bg-[#F875AA]/10 hover:border-[#F875AA]/30 hover:text-[#F875AA] transition-all">
+                    <i data-lucide="history" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Lịch sử file lương đã gửi</span>
+                    <span class="sm:hidden">Lịch sử</span>
+                </button>
+
                 <!-- User Profile - Top Right -->
                 <div class="flex items-center gap-3 px-4 py-2 rounded-xl bg-white/70 backdrop-blur-sm border border-gray-100 shadow-sm">
                     <div class="w-9 h-9 rounded-full bg-gradient-to-br from-[#F875AA] to-[#AEDEFC] flex items-center justify-center text-white font-semibold text-sm">
@@ -375,5 +384,99 @@
     </div>
 
     <script src="/js/sendPayroll.js"></script>
+
+    <!-- ===== IMPORT HISTORY MODAL ===== -->
+    <div id="importHistoryModal"
+        class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+        onclick="if(event.target===this) closeImportHistoryModal()">
+
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#F875AA] to-[#AEDEFC] flex items-center justify-center">
+                        <i data-lucide="history" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-800">Lịch sử file lương đã gửi</h2>
+                        <p class="text-xs text-gray-400">Mỗi lần import Overall-payroll được lưu lại tại đây</p>
+                    </div>
+                </div>
+                <button onclick="closeImportHistoryModal()" class="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-lg hover:bg-gray-100">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="flex-1 overflow-y-auto p-6">
+
+                <!-- Session List View -->
+                <div id="importHistorySessionList">
+                    <div id="importHistoryLoading" class="flex items-center justify-center py-12 text-gray-400">
+                        <i data-lucide="loader-2" class="w-6 h-6 animate-spin mr-2"></i>
+                        <span>Đang tải lịch sử...</span>
+                    </div>
+                    <div id="importHistoryEmpty" class="hidden flex-col items-center justify-center py-12 text-center text-gray-400">
+                        <i data-lucide="inbox" class="w-12 h-12 mb-3 opacity-30"></i>
+                        <p class="font-medium">Chưa có lịch sử nào</p>
+                        <p class="text-sm mt-1">Lịch sử sẽ xuất hiện sau lần import đầu tiên</p>
+                    </div>
+                    <div id="importHistoryList" class="space-y-3 hidden"></div>
+                </div>
+
+                <!-- Session Detail View -->
+                <div id="importHistoryDetailView" class="hidden">
+                    <div class="flex items-center gap-3 mb-5">
+                        <button onclick="backToSessionList()" class="flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#F875AA] transition-colors font-medium">
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                            Quay lại
+                        </button>
+                        <span class="text-gray-300">|</span>
+                        <span id="detailSessionTitle" class="text-sm font-semibold text-gray-700 truncate"></span>
+                        <span id="detailSessionDate" class="text-xs text-gray-400 flex-shrink-0"></span>
+                    </div>
+
+                    <!-- Summary Cards -->
+                    <div id="detailSummaryCards" class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-5"></div>
+
+                    <!-- Filter Tabs -->
+                    <div class="flex gap-2 mb-4 flex-wrap">
+                        <button onclick="filterDetailTable('all')" data-filter="all"
+                            class="detail-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[#F875AA] text-white">Tất cả</button>
+                        <button onclick="filterDetailTable('sent')" data-filter="sent"
+                            class="detail-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200">✅ Đã gửi</button>
+                        <button onclick="filterDetailTable('failed')" data-filter="failed"
+                            class="detail-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200">❌ Lỗi</button>
+                        <button onclick="filterDetailTable('no_gmail')" data-filter="no_gmail"
+                            class="detail-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200">📭 Chưa có Gmail</button>
+                        <button onclick="filterDetailTable('not_found')" data-filter="not_found"
+                            class="detail-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200">🔍 Không tìm thấy</button>
+                        <button onclick="filterDetailTable('limit_reached')" data-filter="limit_reached"
+                            class="detail-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200">⏸ Vượt quota</button>
+                    </div>
+
+                    <!-- Detail Table -->
+                    <div class="overflow-x-auto rounded-xl border border-gray-100">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wide">
+                                    <th class="text-left px-4 py-3 font-medium">#</th>
+                                    <th class="text-left px-4 py-3 font-medium">Mã NV</th>
+                                    <th class="text-left px-4 py-3 font-medium">Họ tên</th>
+                                    <th class="text-left px-4 py-3 font-medium">Email</th>
+                                    <th class="text-left px-4 py-3 font-medium">Trạng thái</th>
+                                    <th class="text-left px-4 py-3 font-medium">Ghi chú lỗi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detailTableBody" class="divide-y divide-gray-50"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!-- ===== END IMPORT HISTORY MODAL ===== -->
 
 </body></html>

@@ -585,3 +585,235 @@ async function downloadPayrollFile(downloadUrl, fileName) {
         alert(`❌ Lỗi tải xuống!\n\n${error.message}`);
     }
 }
+
+// ============================================================
+// IMPORT HISTORY FEATURE (Cloudinary storage)
+// ============================================================
+
+let _importHistoryAllDetails = [];
+
+/** Escape HTML to prevent XSS */
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function formatViDate(isoString) {
+    if (!isoString) return '';
+    return new Date(isoString).toLocaleString('vi-VN', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+    });
+}
+
+/** Open modal */
+async function openImportHistoryModal() {
+    const modal = document.getElementById('importHistoryModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    showSessionListView();
+    await loadImportHistory();
+    lucide.createIcons();
+}
+
+function closeImportHistoryModal() {
+    document.getElementById('importHistoryModal').classList.add('hidden');
+    document.getElementById('importHistoryModal').classList.remove('flex');
+}
+
+function showSessionListView() {
+    document.getElementById('importHistorySessionList').classList.remove('hidden');
+    document.getElementById('importHistoryDetailView').classList.add('hidden');
+}
+
+function backToSessionList() { showSessionListView(); }
+
+/** Fetch and render session list */
+async function loadImportHistory() {
+    const loadingEl = document.getElementById('importHistoryLoading');
+    const emptyEl   = document.getElementById('importHistoryEmpty');
+    const listEl    = document.getElementById('importHistoryList');
+
+    loadingEl.classList.remove('hidden');
+    emptyEl.classList.add('hidden');
+    listEl.classList.add('hidden');
+    listEl.innerHTML = '';
+
+    try {
+        const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
+        const res = await fetch(`${API_CONFIG.BASE_URL}/payroll/import-history`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        loadingEl.classList.add('hidden');
+
+        if (!data.sessions || data.sessions.length === 0) {
+            emptyEl.classList.remove('hidden');
+            emptyEl.classList.add('flex');
+            return;
+        }
+
+        listEl.classList.remove('hidden');
+        listEl.innerHTML = data.sessions.map(s => renderSessionCard(s)).join('');
+        lucide.createIcons();
+
+    } catch (err) {
+        console.error('❌ [IMPORT HISTORY]', err);
+        loadingEl.classList.add('hidden');
+        listEl.classList.remove('hidden');
+        listEl.innerHTML = `<div class="text-center py-8 text-red-400 text-sm">Lỗi tải lịch sử: ${err.message}</div>`;
+    }
+}
+
+/** Render one session card */
+function renderSessionCard(s) {
+    const hasFile = !!s.file_url;
+    return `
+    <div class="border border-gray-100 rounded-xl p-4 hover:border-[#F875AA]/30 hover:shadow-sm transition-all bg-white">
+        <div class="flex items-start justify-between gap-4">
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+                    <span class="font-medium text-gray-800 text-sm truncate max-w-[220px]">${escapeHtml(s.file_name)}</span>
+                    ${s.month_period && s.month_period !== 'N/A'
+                        ? `<span class="px-2 py-0.5 rounded-full bg-[#F875AA]/10 text-[#F875AA] text-xs font-medium">${escapeHtml(s.month_period)}</span>`
+                        : ''}
+                </div>
+                <div class="flex items-center gap-3 text-xs text-gray-400 mb-3 flex-wrap">
+                    <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i>${formatViDate(s.imported_at)}</span>
+                    ${s.imported_by_name ? `<span class="flex items-center gap-1"><i data-lucide="user" class="w-3 h-3"></i>${escapeHtml(s.imported_by_name)}</span>` : ''}
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <span class="px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-medium">👥 ${s.total_employees} NV</span>
+                    <span class="px-2.5 py-1 rounded-full bg-green-50 text-green-700 text-xs font-medium">✅ ${s.total_success} gửi OK</span>
+                    ${s.total_failed       > 0 ? `<span class="px-2.5 py-1 rounded-full bg-red-50 text-red-600 text-xs font-medium">❌ ${s.total_failed} lỗi</span>` : ''}
+                    ${s.total_no_gmail    > 0 ? `<span class="px-2.5 py-1 rounded-full bg-yellow-50 text-yellow-700 text-xs font-medium">📭 ${s.total_no_gmail} Gmail</span>` : ''}
+                    ${s.total_not_found   > 0 ? `<span class="px-2.5 py-1 rounded-full bg-orange-50 text-orange-600 text-xs font-medium">🔍 ${s.total_not_found} N/F</span>` : ''}
+                    ${s.total_limit_reached > 0 ? `<span class="px-2.5 py-1 rounded-full bg-purple-50 text-purple-600 text-xs font-medium">⏸ ${s.total_limit_reached} quota</span>` : ''}
+                </div>
+            </div>
+            <div class="flex flex-col gap-2 flex-shrink-0">
+                <button onclick="openSessionDetail(${s.id}, '${escapeHtml(s.file_name)}', '${escapeHtml(s.imported_at)}')"
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#F875AA]/10 text-[#F875AA] hover:bg-[#F875AA]/20 text-xs font-medium whitespace-nowrap">
+                    <i data-lucide="list" class="w-3.5 h-3.5"></i>Chi tiết
+                </button>
+                ${hasFile
+                    ? `<a href="${escapeHtml(s.file_url)}" target="_blank" download
+                           class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-medium whitespace-nowrap text-center">
+                           <i data-lucide="download" class="w-3.5 h-3.5"></i>Tải file
+                       </a>`
+                    : `<span class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 text-gray-400 text-xs whitespace-nowrap cursor-not-allowed">
+                           <i data-lucide="cloud-off" class="w-3.5 h-3.5"></i>Không có file
+                       </span>`
+                }
+            </div>
+        </div>
+    </div>`;
+}
+
+/** Open detail view for a session */
+async function openSessionDetail(sessionId, fileName, importedAt) {
+    document.getElementById('importHistorySessionList').classList.add('hidden');
+    document.getElementById('importHistoryDetailView').classList.remove('hidden');
+    document.getElementById('detailSessionTitle').textContent = fileName;
+    document.getElementById('detailSessionDate').textContent = formatViDate(importedAt);
+    document.getElementById('detailTableBody').innerHTML =
+        `<tr><td colspan="6" class="text-center py-8 text-gray-400">
+            <div class="flex items-center justify-center gap-2">
+                <span class="animate-spin inline-block w-4 h-4 border-2 border-[#F875AA] border-t-transparent rounded-full"></span>
+                Đang tải chi tiết...
+            </div>
+        </td></tr>`;
+    document.getElementById('detailSummaryCards').innerHTML = '';
+
+    // Reset filter tabs
+    document.querySelectorAll('.detail-filter-btn').forEach(btn => {
+        btn.className = btn.className.replace('bg-[#F875AA] text-white', 'bg-gray-100 text-gray-600 hover:bg-gray-200');
+    });
+    const allBtn = document.querySelector('.detail-filter-btn[data-filter="all"]');
+    if (allBtn) allBtn.className = allBtn.className.replace('bg-gray-100 text-gray-600 hover:bg-gray-200', 'bg-[#F875AA] text-white');
+    lucide.createIcons();
+
+    try {
+        const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
+        const res = await fetch(`${API_CONFIG.BASE_URL}/payroll/import-history/${sessionId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const session = data.session;
+        _importHistoryAllDetails = data.details || [];
+
+        // Summary cards
+        const cards = [
+            { label: 'Đã gửi',         value: session.total_success,       color: 'text-green-600',  bg: 'bg-green-50',  icon: '✅' },
+            { label: 'Lỗi gửi',        value: session.total_failed,        color: 'text-red-600',    bg: 'bg-red-50',    icon: '❌' },
+            { label: 'Chưa có Gmail',  value: session.total_no_gmail,      color: 'text-yellow-700', bg: 'bg-yellow-50', icon: '📭' },
+            { label: 'Không tìm thấy',value: session.total_not_found,     color: 'text-orange-600', bg: 'bg-orange-50', icon: '🔍' },
+            { label: 'Vượt quota',     value: session.total_limit_reached, color: 'text-purple-600', bg: 'bg-purple-50', icon: '⏸' },
+        ];
+        document.getElementById('detailSummaryCards').innerHTML = cards.map(c =>
+            `<div class="rounded-xl ${c.bg} px-4 py-3 text-center">
+                <div class="text-2xl font-bold ${c.color}">${c.value}</div>
+                <div class="text-xs text-gray-500 mt-0.5">${c.icon} ${c.label}</div>
+            </div>`
+        ).join('');
+
+        renderDetailTable('all');
+        lucide.createIcons();
+
+    } catch (err) {
+        console.error('❌ [IMPORT HISTORY] detail error:', err);
+        document.getElementById('detailTableBody').innerHTML =
+            `<tr><td colspan="6" class="text-center py-8 text-red-400">Lỗi tải chi tiết: ${err.message}</td></tr>`;
+    }
+}
+
+/** Render detail table with filter */
+function renderDetailTable(filter) {
+    const rows = filter === 'all'
+        ? _importHistoryAllDetails
+        : _importHistoryAllDetails.filter(d => d.status === filter);
+
+    const STATUS = {
+        sent:          { label: 'Đã gửi',         cls: 'bg-green-100 text-green-700' },
+        failed:        { label: 'Lỗi gửi',         cls: 'bg-red-100 text-red-700' },
+        no_gmail:      { label: 'Chưa có Gmail',   cls: 'bg-yellow-100 text-yellow-700' },
+        not_found:     { label: 'Không tìm thấy',  cls: 'bg-orange-100 text-orange-700' },
+        limit_reached: { label: 'Vượt quota',       cls: 'bg-purple-100 text-purple-700' }
+    };
+
+    if (rows.length === 0) {
+        document.getElementById('detailTableBody').innerHTML =
+            `<tr><td colspan="6" class="text-center py-8 text-gray-400 text-sm">Không có dữ liệu</td></tr>`;
+        return;
+    }
+
+    document.getElementById('detailTableBody').innerHTML = rows.map((row, i) => {
+        const s = STATUS[row.status] || { label: row.status, cls: 'bg-gray-100 text-gray-600' };
+        return `<tr class="hover:bg-gray-50/50 transition-colors">
+            <td class="px-4 py-3 text-xs text-gray-400">${i + 1}</td>
+            <td class="px-4 py-3 text-sm font-mono text-gray-700">${escapeHtml(row.employee_code || '—')}</td>
+            <td class="px-4 py-3 text-sm text-gray-800 font-medium">${escapeHtml(row.employee_name || '—')}</td>
+            <td class="px-4 py-3 text-sm text-gray-500">${escapeHtml(row.email || '—')}</td>
+            <td class="px-4 py-3"><span class="px-2.5 py-1 rounded-full text-xs font-medium ${s.cls}">${s.label}</span></td>
+            <td class="px-4 py-3 text-xs text-gray-400 max-w-[160px] truncate" title="${escapeHtml(row.error_message || '')}">
+                ${row.error_message ? escapeHtml(row.error_message) : '—'}
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+/** Switch filter tab */
+function filterDetailTable(filter) {
+    document.querySelectorAll('.detail-filter-btn').forEach(btn => {
+        const active = btn.dataset.filter === filter;
+        btn.className = active
+            ? btn.className.replace('bg-gray-100 text-gray-600 hover:bg-gray-200', 'bg-[#F875AA] text-white')
+            : btn.className.replace('bg-[#F875AA] text-white', 'bg-gray-100 text-gray-600 hover:bg-gray-200');
+    });
+    renderDetailTable(filter);
+}
+

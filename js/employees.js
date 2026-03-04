@@ -2774,17 +2774,30 @@ async function exportToExcel() {
     }
 
     try {
-        // Prepare data for Excel
-        const data = window.exportEmployeesList.map((emp, index) => {
-            // Filter out emails with @thienphumut.local suffix
-            const displayEmail = (emp.email && emp.email.endsWith('@thienphumut.local')) ? '' : (emp.email || '');
+        // Prepare data for Excel (format khớp với "Nhập nhân viên hàng loạt")
+        const data = window.exportEmployeesList.map((emp) => {
+            // Filter out placeholder emails (@thienphumut.local / @noemail.thienphumut.local)
+            const displayEmail = (emp.email && emp.email.includes('@thienphumut.local')) ? '' : (emp.email || '');
 
             return {
-                'STT': index + 1,
                 'Họ và tên đệm': emp.first_name || '',
                 'Tên': emp.last_name || '',
                 'Mã nhân viên': emp.employee_id || '',
-                'Gmail': displayEmail
+                'Chức vụ': emp.job_title || '',
+                'Phòng ban': emp.department_name || emp.department || '',
+                'Email': displayEmail,
+                'Số điện thoại': emp.phone || '',
+                'Ngày sinh': emp.date_of_birth || '',
+                'Giới tính': emp.gender || '',
+                'Lương': emp.salary || '',
+                'Chu kỳ lương': emp.pay_frequency || '',
+                'Ngày bắt đầu': emp.start_date || '',
+                'Loại hợp đồng': emp.employment_type || '',
+                'Địa chỉ': emp.address || '',
+                'Thành phố': emp.city || '',
+                'Tỉnh/Thành': emp.state || '',
+                'Mã bưu điện': emp.zip_code || '',
+                'Quốc gia': emp.country || ''
             };
         });
 
@@ -2795,11 +2808,24 @@ async function exportToExcel() {
 
         // Set column widths
         ws['!cols'] = [
-            { wch: 5 },  // STT
             { wch: 25 }, // Họ và tên đệm
             { wch: 15 }, // Tên
             { wch: 15 }, // Mã nhân viên
-            { wch: 30 }  // Gmail
+            { wch: 20 }, // Chức vụ
+            { wch: 20 }, // Phòng ban
+            { wch: 30 }, // Email
+            { wch: 18 }, // Số điện thoại
+            { wch: 14 }, // Ngày sinh
+            { wch: 12 }, // Giới tính
+            { wch: 14 }, // Lương
+            { wch: 14 }, // Chu kỳ lương
+            { wch: 14 }, // Ngày bắt đầu
+            { wch: 18 }, // Loại hợp đồng
+            { wch: 30 }, // Địa chỉ
+            { wch: 15 }, // Thành phố
+            { wch: 15 }, // Tỉnh/Thành
+            { wch: 12 }, // Mã bưu điện
+            { wch: 12 }  // Quốc gia
         ];
 
         // Create workbook
