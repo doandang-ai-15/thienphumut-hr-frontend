@@ -2635,6 +2635,281 @@ async function updateAllEmployeeCodes() {
     }
 }
 
+// ==================== TRUE EMPLOYEE CODE UPDATE ====================
+
+let currentTrueCodeUpdates = [];
+
+async function openTrueCodeUpdateModal() {
+    showLoading();
+
+    try {
+        const response = await api.get('/employees/validate-true-codes');
+        hideLoading();
+
+        if (!response.success) {
+            showError('Không thể đọc file true-employee-code.xlsx hoặc database');
+            return;
+        }
+
+        const { summary, toUpdate, noChange, tpPrefixed, duplicateNames, notFoundInDB } = response;
+        currentTrueCodeUpdates = toUpdate;
+
+        showTrueCodeUpdateModal(summary, toUpdate, noChange, tpPrefixed, duplicateNames, notFoundInDB);
+
+    } catch (error) {
+        hideLoading();
+        console.error('Failed to validate true employee codes:', error);
+        showError('Lỗi khi kiểm tra mã nhân viên: ' + error.message);
+    }
+}
+
+function showTrueCodeUpdateModal(summary, toUpdate, noChange, tpPrefixed, duplicateNames, notFoundInDB) {
+    // Section: Employees to update
+    const toUpdateHTML = toUpdate.length > 0 ? `
+    <div class="mb-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+            <i data-lucide="refresh-cw" class="w-5 h-5 text-orange-500"></i>
+            Cần đổi mã nhân viên (${toUpdate.length})
+        </h3>
+        <div class="space-y-2 max-h-60 overflow-y-auto">
+            ${toUpdate.map(item => `
+                <div class="bg-orange-50 border border-orange-200 rounded-xl p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <div class="font-medium text-gray-800">${item.fullName}</div>
+                            <div class="text-xs text-gray-500 mt-0.5">${item.department}</div>
+                        </div>
+                        <div class="flex items-center gap-3 text-sm">
+                            <div class="text-center">
+                                <div class="text-xs text-gray-500">Mã cũ</div>
+                                <div class="font-mono font-semibold text-red-600">${item.currentCode}</div>
+                            </div>
+                            <div class="text-gray-400">→</div>
+                            <div class="text-center">
+                                <div class="text-xs text-gray-500">Mã mới</div>
+                                <div class="font-mono font-semibold text-green-600">${item.newCode}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    </div>
+    ` : '';
+
+    // Section: Duplicate names (need manual check)
+    const duplicateNamesHTML = duplicateNames.length > 0 ? `
+    <div class="mb-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+            <i data-lucide="alert-triangle" class="w-5 h-5 text-red-500"></i>
+            Nhân viên trùng tên - cần kiểm tra thủ công (${duplicateNames.length})
+        </h3>
+        <div class="space-y-2 max-h-60 overflow-y-auto">
+            ${duplicateNames.map(item => `
+                <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <div class="font-medium text-gray-800">${item.fullName}</div>
+                            <div class="text-xs text-gray-500 mt-0.5">${item.department}</div>
+                        </div>
+                        <div class="flex items-center gap-3 text-sm">
+                            <div class="text-center">
+                                <div class="text-xs text-gray-500">Mã hiện tại</div>
+                                <div class="font-mono font-semibold text-blue-600">${item.currentCode}</div>
+                            </div>
+                            <div class="text-gray-400">→</div>
+                            <div class="text-center">
+                                <div class="text-xs text-gray-500">Mã mới (file)</div>
+                                <div class="font-mono font-semibold text-orange-600">${item.newCode}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    </div>
+    ` : '';
+
+    // Section: TP-prefixed codes
+    const tpPrefixedHTML = tpPrefixed.length > 0 ? `
+    <div class="mb-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+            <i data-lucide="tag" class="w-5 h-5 text-purple-500"></i>
+            Mã bắt đầu bằng "TP" (${tpPrefixed.length})
+        </h3>
+        <div class="space-y-2 max-h-40 overflow-y-auto">
+            ${tpPrefixed.map(item => `
+                <div class="bg-purple-50 border border-purple-200 rounded-xl p-3 flex items-center justify-between">
+                    <div>
+                        <span class="font-medium text-gray-800">${item.fullName}</span>
+                        <span class="text-xs text-gray-500 ml-2">${item.department}</span>
+                    </div>
+                    <span class="font-mono text-sm font-semibold text-purple-600">${item.currentCode}</span>
+                </div>
+            `).join('')}
+        </div>
+    </div>
+    ` : '';
+
+    // Section: Not found in DB
+    const notFoundHTML = notFoundInDB.length > 0 ? `
+    <div class="mb-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+            <i data-lucide="user-x" class="w-5 h-5 text-gray-500"></i>
+            Không tìm thấy trong Database (${notFoundInDB.length})
+        </h3>
+        <div class="space-y-2 max-h-40 overflow-y-auto">
+            ${notFoundInDB.map(item => `
+                <div class="bg-gray-50 border border-gray-200 rounded-xl p-3 flex items-center justify-between">
+                    <div>
+                        <span class="font-medium text-gray-800">${item.fullName}</span>
+                        <span class="text-xs text-gray-500 ml-2">Row ${item.row}</span>
+                    </div>
+                    <span class="font-mono text-sm text-gray-600">${item.newCode}</span>
+                </div>
+            `).join('')}
+        </div>
+    </div>
+    ` : '';
+
+    // All matched message
+    const allMatchedHTML = toUpdate.length === 0 && duplicateNames.length === 0 ? `
+    <div class="text-center py-8">
+        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i data-lucide="check-circle" class="w-10 h-10 text-green-500"></i>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-800 mb-2">Tất cả mã nhân viên đã chính xác!</h3>
+        <p class="text-gray-600">Không cần cập nhật mã nào.</p>
+    </div>
+    ` : '';
+
+    const modal = `
+        <div id="trueCodeUpdateModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 backdrop-in">
+            <div class="bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden modal-in">
+                <div class="bg-gradient-to-r from-[#F875AA] to-[#AEDEFC] p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                                <i data-lucide="replace" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-semibold">Cập nhật mã nhân viên theo dạng số</h2>
+                                <p class="text-white/80 text-sm mt-0.5">So sánh với file true-employee-code.xlsx</p>
+                            </div>
+                        </div>
+                        <button onclick="closeTrueCodeUpdateModal()" class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-6 border-b border-gray-200">
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <div class="bg-orange-50 rounded-xl p-4 text-center">
+                            <div class="text-2xl font-bold text-orange-600">${summary.toUpdateCount}</div>
+                            <div class="text-xs text-gray-600 mt-1">Cần đổi mã</div>
+                        </div>
+                        <div class="bg-green-50 rounded-xl p-4 text-center">
+                            <div class="text-2xl font-bold text-green-600">${summary.noChangeCount}</div>
+                            <div class="text-xs text-gray-600 mt-1">Không cần đổi</div>
+                        </div>
+                        <div class="bg-purple-50 rounded-xl p-4 text-center">
+                            <div class="text-2xl font-bold text-purple-600">${summary.tpPrefixedCount}</div>
+                            <div class="text-xs text-gray-600 mt-1">Mã bắt đầu "TP"</div>
+                        </div>
+                        <div class="bg-red-50 rounded-xl p-4 text-center">
+                            <div class="text-2xl font-bold text-red-600">${summary.duplicateNamesCount}</div>
+                            <div class="text-xs text-gray-600 mt-1">Tên trùng nhau</div>
+                        </div>
+                        <div class="bg-gray-50 rounded-xl p-4 text-center">
+                            <div class="text-2xl font-bold text-gray-600">${summary.notFoundInDBCount}</div>
+                            <div class="text-xs text-gray-600 mt-1">Không có trong DB</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6 overflow-y-auto" style="max-height: calc(90vh - 320px);">
+                    ${duplicateNamesHTML}
+                    ${toUpdateHTML}
+                    ${tpPrefixedHTML}
+                    ${notFoundHTML}
+                    ${allMatchedHTML}
+                </div>
+
+                <div class="p-6 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                    <div class="text-sm text-gray-600">
+                        ${toUpdate.length > 0 ? `<span class="font-medium text-orange-600">${toUpdate.length} nhân viên</span> sẽ được cập nhật mã mới` : ''}
+                        ${duplicateNames.length > 0 ? `<br><span class="font-medium text-red-600">${duplicateNames.length} nhân viên trùng tên</span> cần kiểm tra thủ công` : ''}
+                    </div>
+                    <div class="flex gap-3">
+                        ${toUpdate.length > 0 ? `
+                        <button onclick="executeTrueCodeUpdate()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium hover:shadow-lg transition-all flex items-center gap-2">
+                            <i data-lucide="check" class="w-4 h-4"></i>
+                            Cập nhật ${toUpdate.length} mã
+                        </button>
+                        ` : ''}
+                        <button onclick="closeTrueCodeUpdateModal()" class="px-6 py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors">
+                            Đóng
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modal);
+    lucide.createIcons();
+}
+
+function closeTrueCodeUpdateModal() {
+    const modal = document.getElementById('trueCodeUpdateModal');
+    if (modal) modal.remove();
+}
+
+async function executeTrueCodeUpdate() {
+    if (currentTrueCodeUpdates.length === 0) {
+        showError('Không có mã nhân viên nào cần cập nhật');
+        return;
+    }
+
+    if (!confirm(`Bạn có chắc muốn cập nhật ${currentTrueCodeUpdates.length} mã nhân viên?\n\nHành động này sẽ thay đổi mã nhân viên trong database!`)) {
+        return;
+    }
+
+    showLoading();
+
+    try {
+        const response = await api.post('/employees/update-true-codes', {
+            updates: currentTrueCodeUpdates
+        });
+
+        hideLoading();
+
+        if (response.success) {
+            const { results } = response;
+            closeTrueCodeUpdateModal();
+
+            showSuccess(`Đã cập nhật thành công ${results.successCount} mã nhân viên!`);
+
+            if (results.failedCount > 0) {
+                showError(`Có ${results.failedCount} mã nhân viên cập nhật thất bại.`);
+                console.error('Failed updates:', results.failed);
+            }
+
+            // Reload and re-open modal to show updated results
+            await loadEmployees();
+            setTimeout(() => openTrueCodeUpdateModal(), 1500);
+        } else {
+            showError('Cập nhật thất bại: ' + (response.error || 'Unknown error'));
+        }
+
+    } catch (error) {
+        hideLoading();
+        console.error('Failed to update true employee codes:', error);
+        showError('Lỗi khi cập nhật mã nhân viên: ' + error.message);
+    }
+}
+
 // ==================== EXPORT ALL EMPLOYEES ====================
 
 async function openExportAllEmployeesModal() {
