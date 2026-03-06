@@ -1,0 +1,498 @@
+<html lang="vi"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gửi Bảng Chấm Công - PeopleHub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/js/config.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/navigation.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-fade-in { animation: fadeInUp 0.6s ease-out forwards; }
+        .animate-slide-in { animation: slideIn 0.5s ease-out forwards; }
+        .animate-pulse-soft { animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .animate-spin { animation: spin 1s linear infinite; }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(248, 117, 170, 0.15); }
+        .stat-card { transition: all 0.3s ease; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); }
+        .nav-item { transition: all 0.2s ease; }
+        .nav-item:hover { background: linear-gradient(135deg, #F875AA20, #AEDEFC30); transform: translateX(4px); }
+        .upload-zone { transition: all 0.3s ease; }
+        .upload-zone:hover { border-color: #F875AA; background: linear-gradient(135deg, #F875AA08, #AEDEFC08); }
+        .upload-zone.dragover { border-color: #F875AA; background: linear-gradient(135deg, #F875AA15, #AEDEFC15); transform: scale(1.02); }
+        .footer-link { transition: all 0.2s ease; }
+        .footer-link:hover { color: #F875AA; transform: translateX(4px); }
+        .social-icon { transition: all 0.3s ease; }
+        .social-icon:hover { transform: translateY(-4px) scale(1.1); }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-[#FDEDED] via-white to-[#EDFFF0] min-h-screen flex flex-col">
+    <div class="flex flex-1">
+        <!-- Thanh bên -->
+        <aside class="w-64 bg-white/80 backdrop-blur-xl border-r border-[#F875AA]/20 p-6 hidden lg:block" style="animation: slideIn 0.4s ease-out">
+            <div class="flex items-center gap-3 mb-10">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F875AA] to-[#AEDEFC] flex items-center justify-center">
+                    <span class="text-white font-bold text-lg tracking-tighter">HR</span>
+                </div>
+                <span class="font-semibold text-gray-800 tracking-tight">Thiên Phú Mút</span>
+            </div>
+
+            <nav class="space-y-2">
+                <a href="index.html" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:text-[#F875AA]">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span class="text-sm">Bảng tổng quát</span>
+                </a>
+                <a href="employees.html" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:text-[#F875AA]">
+                    <i data-lucide="users" class="w-5 h-5"></i>
+                    <span class="text-sm">Nhân viên</span>
+                </a>
+                <a href="departments.html" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:text-[#F875AA]">
+                    <i data-lucide="briefcase" class="w-5 h-5"></i>
+                    <span class="text-sm">Phòng ban</span>
+                </a>
+                <a href="leaveApplications.html" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:text-[#F875AA]">
+                    <i data-lucide="calendar-days" class="w-5 h-5"></i>
+                    <span class="text-sm">Đơn xin nghỉ phép</span>
+                </a>
+                <a href="contracts.html" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:text-[#F875AA]">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span class="text-sm">Hợp đồng</span>
+                </a>
+                <a href="sendPayroll.html" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:text-[#F875AA]">
+                    <i data-lucide="send" class="w-5 h-5"></i>
+                    <span class="text-sm">Gửi bảng lương</span>
+                </a>
+                <a href="sendTimesheet.html" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-[#F875AA]/20 to-[#AEDEFC]/20 text-[#F875AA] font-medium">
+                    <i data-lucide="clock" class="w-5 h-5"></i>
+                    <span class="text-sm">Gửi bảng chấm công</span>
+                </a>
+                <a href="settings.html" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:text-[#F875AA]">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
+                    <span class="text-sm">Cài đặt tổng</span>
+                </a>
+
+                <div class="mt-10 p-4 rounded-2xl bg-gradient-to-br from-[#F875AA]/10 to-[#AEDEFC]/10 border border-[#F875AA]/20">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#F875AA] to-[#AEDEFC] flex items-center justify-center mb-3">
+                        <i data-lucide="sparkles" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <p class="text-sm font-medium text-gray-800 mb-1">Xảy ra lỗi?</p>
+                    <p class="text-xs text-gray-500 mb-3">Nếu trong quá trình sử dụng gặp bất kỳ trục trặc nào, vui lòng thông báo hỗ trợ ngay.</p>
+                    <a href="https://zalo.me/0835911358" target="_blank" class="w-full py-2 rounded-lg bg-[#F875AA] text-white text-xs font-medium hover:bg-[#e5649a] transition-colors inline-block text-center">
+                        Nhận hỗ trợ Zalo
+                    </a>
+                </div>
+
+            </nav>
+
+        </aside>
+
+        <!-- Nội dung chính -->
+        <main class="flex-1 p-4 lg:p-8 overflow-auto">
+            <!-- Tiêu đề -->
+            <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 animate-fade-in">
+                <div>
+                    <h1 class="text-2xl lg:text-3xl font-semibold text-gray-800 tracking-tight">Gửi Bảng Chấm Công</h1>
+                    <p class="text-gray-500 text-sm mt-1">Tải lên và gửi bảng chấm công chi tiết cho từng nhân viên qua email</p>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <!-- Import History Button -->
+                    <button id="btnImportHistory"
+                        onclick="openImportHistoryModal()"
+                        class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/70 backdrop-blur-sm border border-gray-100 shadow-sm text-sm font-medium text-gray-700 hover:bg-teal-50 hover:border-teal-300 hover:text-teal-600 transition-all">
+                        <i data-lucide="history" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">Lịch sử chấm công đã gửi</span>
+                        <span class="sm:hidden">Lịch sử</span>
+                    </button>
+
+                <!-- User Profile - Top Right -->
+                <div class="flex items-center gap-3 px-4 py-2 rounded-xl bg-white/70 backdrop-blur-sm border border-gray-100 shadow-sm">
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-[#F875AA] to-[#AEDEFC] flex items-center justify-center text-white font-semibold text-sm">
+
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-800 truncate"></p>
+                        <p class="text-xs text-gray-500 truncate"></p>
+                    </div>
+                    <a href="login.html" class="text-gray-400 hover:text-[#F875AA] transition-colors" title="Đăng xuất">
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                    </a>
+                </div>
+                </div>
+            </header>
+
+            <!-- Thống kê Email -->
+            <div class="max-w-4xl mx-auto mb-8 animate-fade-in" style="animation-delay: 0.05s">
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Mail đã gửi hôm nay -->
+                    <div class="stat-card bg-white/80 backdrop-blur-sm rounded-2xl p-5 border border-[#F875AA]/10">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F875AA]/20 to-[#F875AA]/10 flex items-center justify-center">
+                                <i data-lucide="calendar-check" class="w-5 h-5 text-[#F875AA]"></i>
+                            </div>
+                            <span class="text-xs text-gray-400 font-medium">Hôm nay</span>
+                        </div>
+                        <p id="mailsToday" class="text-2xl font-semibold text-gray-800 tracking-tight">0</p>
+                        <p class="text-xs text-gray-500 mt-1">Mail đã gửi hôm nay</p>
+                    </div>
+
+                    <!-- Mail đã gửi tháng này -->
+                    <div class="stat-card bg-white/80 backdrop-blur-sm rounded-2xl p-5 border border-[#AEDEFC]/20">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#AEDEFC]/30 to-[#AEDEFC]/10 flex items-center justify-center">
+                                <i data-lucide="calendar-range" class="w-5 h-5 text-[#7BC4F0]"></i>
+                            </div>
+                            <span class="text-xs text-gray-400 font-medium">Tháng này</span>
+                        </div>
+                        <p id="mailsThisMonth" class="text-2xl font-semibold text-gray-800 tracking-tight">0</p>
+                        <p class="text-xs text-gray-500 mt-1">Mail đã gửi tháng này</p>
+                    </div>
+
+                    <!-- Mail đang gửi -->
+                    <div class="stat-card bg-white/80 backdrop-blur-sm rounded-2xl p-5 border border-orange-200/50">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-100 to-orange-50 flex items-center justify-center">
+                                <i data-lucide="loader-2" class="w-5 h-5 text-orange-500" id="sendingIcon"></i>
+                            </div>
+                            <div id="sendingIndicator" class="hidden flex items-center gap-1">
+                                <span class="w-2 h-2 rounded-full bg-orange-400 animate-pulse-soft"></span>
+                                <span class="text-xs text-orange-500 font-medium">Đang gửi</span>
+                            </div>
+                        </div>
+                        <p id="mailsSending" class="text-2xl font-semibold text-gray-800 tracking-tight">0</p>
+                        <p class="text-xs text-gray-500 mt-1">Mail đang gửi</p>
+                    </div>
+
+                    <!-- Mail gửi thành công -->
+                    <div class="stat-card bg-white/80 backdrop-blur-sm rounded-2xl p-5 border border-green-200/50">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-green-100 to-green-50 flex items-center justify-center">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-green-500"></i>
+                            </div>
+                            <span class="text-xs text-green-500 font-medium">Thành công</span>
+                        </div>
+                        <p id="mailsSuccess" class="text-2xl font-semibold text-gray-800 tracking-tight">0</p>
+                        <p class="text-xs text-gray-500 mt-1">Mail gửi thành công</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nội dung chính -->
+            <div class="max-w-4xl mx-auto space-y-8">
+                <!-- Batch Timesheet Sending Section -->
+                <div class="card-hover bg-gradient-to-br from-teal-50 via-white to-cyan-50 backdrop-blur-sm rounded-2xl p-6 lg:p-8 border-2 border-teal-200/50 animate-fade-in" style="animation-delay: 0.1s">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center shadow-lg">
+                            <i data-lucide="clock" class="w-6 h-6 text-white"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-800 tracking-tight">Gửi bảng chấm công cho tất cả nhân viên</h2>
+                            <p class="text-sm text-gray-500">Tự động tạo và gửi bảng chấm công riêng cho từng nhân viên qua email</p>
+                        </div>
+                    </div>
+
+                    <!-- Upload Zone -->
+                    <div id="timesheetUploadZone" class="upload-zone relative border-2 border-dashed border-teal-200 rounded-2xl p-8 lg:p-10 text-center cursor-pointer bg-white/50">
+                        <input type="file" id="timesheetFileInput" accept=".xlsx,.xls" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+
+                        <div class="flex flex-col items-center">
+                            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-100 to-cyan-100 flex items-center justify-center mb-4">
+                                <i data-lucide="file-spreadsheet" class="w-8 h-8 text-teal-600"></i>
+                            </div>
+                            <p class="text-base font-medium text-gray-700 mb-2">Tải lên file Bảng chấm công tổng hợp (.xlsx)</p>
+                            <p class="text-sm text-gray-500 mb-3">Kéo thả hoặc nhấp để chọn file</p>
+                            <div class="flex items-center gap-2 text-xs text-gray-400">
+                                <i data-lucide="info" class="w-4 h-4"></i>
+                                <span>File chứa dữ liệu tổng hợp chấm công tất cả nhân viên</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- File Preview -->
+                    <div id="timesheetFilePreview" class="hidden mt-4">
+                        <div class="flex items-center justify-between p-4 bg-gradient-to-r from-teal-50 to-cyan-50 rounded-xl border border-teal-200">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-sm">
+                                    <i data-lucide="file-check" class="w-6 h-6 text-teal-500"></i>
+                                </div>
+                                <div>
+                                    <p id="timesheetFileName" class="text-sm font-medium text-gray-800">file.xlsx</p>
+                                    <p id="timesheetFileSize" class="text-xs text-gray-500">0 KB</p>
+                                </div>
+                            </div>
+                            <button id="removeTimesheetFile" class="p-2 rounded-lg hover:bg-white/80 transition-colors">
+                                <i data-lucide="x" class="w-5 h-5 text-gray-400 hover:text-red-500"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Timesheet Options -->
+                    <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Số máy chấm công -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Số máy chấm công</label>
+                            <select id="timesheetNumber" class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all">
+                                <option value="1">Máy 1</option>
+                                <option value="2">Máy 2</option>
+                                <option value="3">Máy 3</option>
+                            </select>
+                        </div>
+
+                        <!-- Tháng/Năm -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Đây là bảng chấm công của tháng/năm:</label>
+                            <input type="text" id="saveMonth" placeholder="01 / 2026"
+                                class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+                            >
+                            <p class="text-xs text-gray-400 mt-1">Chỉ chấp nhận định dạng THÁNG / NĂM, ví dụ 01 / 2026</p>
+                        </div>
+                    </div>
+
+                    <!-- Send Button -->
+                    <button id="sendTimesheetButton" class="w-full mt-6 py-4 rounded-2xl bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-semibold text-base tracking-tight hover:shadow-xl hover:shadow-teal-500/30 transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        <i data-lucide="send" class="w-5 h-5"></i>
+                        Gửi bảng chấm công cho tất cả nhân viên
+                    </button>
+
+                    <!-- Progress Bar -->
+                    <div id="progressSection" class="hidden mt-6">
+                        <div class="bg-white rounded-xl p-4 border border-teal-200">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-medium text-gray-700">Đang gửi email...</span>
+                                <span id="progressText" class="text-sm font-semibold text-teal-600">0/0</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                                <div id="progressBar" class="h-full bg-gradient-to-r from-green-500 to-green-400 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">Vui lòng không đóng trang này trong khi đang gửi email</p>
+                        </div>
+                    </div>
+
+                    <!-- Response UI -->
+                    <div id="responseSection" class="hidden mt-6 space-y-4">
+                        <!-- Daily Limit Warning -->
+                        <div id="dailyLimitWarning" class="hidden bg-orange-50 rounded-xl p-4 border border-orange-200">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="alert-triangle" class="w-6 h-6 text-orange-600 flex-shrink-0"></i>
+                                <div>
+                                    <h3 class="text-sm font-semibold text-orange-800">Giới hạn gửi email hàng ngày</h3>
+                                    <p class="text-xs text-orange-600 mt-1">
+                                        Đã gửi <span id="totalSentToday" class="font-bold">0</span>/300 emails hôm nay.
+                                        Còn lại <span id="remainingQuota" class="font-bold">300</span> emails.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Summary Stats -->
+                        <div class="grid grid-cols-5 gap-3">
+                            <div class="bg-white rounded-xl p-3 border border-gray-200 text-center">
+                                <p class="text-2xl font-bold text-gray-800" id="totalCount">0</p>
+                                <p class="text-xs text-gray-500">Tổng số</p>
+                            </div>
+                            <div class="bg-green-50 rounded-xl p-3 border border-green-200 text-center">
+                                <p class="text-2xl font-bold text-green-600" id="successCount">0</p>
+                                <p class="text-xs text-green-600">Thành công</p>
+                            </div>
+                            <div class="bg-yellow-50 rounded-xl p-3 border border-yellow-200 text-center">
+                                <p class="text-2xl font-bold text-yellow-600" id="noGmailCount">0</p>
+                                <p class="text-xs text-yellow-600">Chưa Gmail</p>
+                            </div>
+                            <div class="bg-orange-50 rounded-xl p-3 border border-orange-200 text-center">
+                                <p class="text-2xl font-bold text-orange-600" id="limitReachedCount">0</p>
+                                <p class="text-xs text-orange-600">Đạt limit</p>
+                            </div>
+                            <div class="bg-red-50 rounded-xl p-3 border border-red-200 text-center">
+                                <p class="text-2xl font-bold text-red-600" id="failedCount">0</p>
+                                <p class="text-xs text-red-600">Lỗi</p>
+                            </div>
+                        </div>
+
+                        <!-- Success List -->
+                        <div id="successSection" class="hidden bg-green-50 rounded-xl p-4 border border-green-200">
+                            <div class="flex items-center gap-2 mb-3">
+                                <i data-lucide="check-circle" class="w-5 h-5 text-green-600"></i>
+                                <h3 class="text-sm font-semibold text-green-800">Đã gửi thành công</h3>
+                            </div>
+                            <div id="successList" class="space-y-2 max-h-64 overflow-y-auto"></div>
+                        </div>
+
+                        <!-- No Gmail List -->
+                        <div id="noGmailSection" class="hidden bg-yellow-50 rounded-xl p-4 border border-yellow-200">
+                            <div class="flex items-center gap-2 mb-3">
+                                <i data-lucide="alert-circle" class="w-5 h-5 text-yellow-600"></i>
+                                <h3 class="text-sm font-semibold text-yellow-800">Chưa cập nhật Gmail</h3>
+                            </div>
+                            <div id="noGmailList" class="space-y-2 max-h-64 overflow-y-auto"></div>
+                        </div>
+
+                        <!-- Limit Reached List -->
+                        <div id="limitReachedSection" class="hidden bg-orange-50 rounded-xl p-4 border border-orange-200">
+                            <div class="flex items-center gap-2 mb-3">
+                                <i data-lucide="clock" class="w-5 h-5 text-orange-600"></i>
+                                <h3 class="text-sm font-semibold text-orange-800">Chưa gửi (Đạt giới hạn 300 emails/ngày)</h3>
+                            </div>
+                            <div id="limitReachedList" class="space-y-2 max-h-64 overflow-y-auto"></div>
+                        </div>
+
+                        <!-- Failed/Not Found List -->
+                        <div id="failedSection" class="hidden bg-red-50 rounded-xl p-4 border border-red-200">
+                            <div class="flex items-center gap-2 mb-3">
+                                <i data-lucide="x-circle" class="w-5 h-5 text-red-600"></i>
+                                <h3 class="text-sm font-semibold text-red-800">Gửi thất bại / Không tìm thấy</h3>
+                            </div>
+                            <div id="failedList" class="space-y-2 max-h-64 overflow-y-auto"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+                <div class="border-t border-[#F875AA]/10 bg-gradient-to-r from-[#FDEDED]/30 via-white/50 to-[#EDFFF0]/30 px-8 lg:px-12 py-6">
+                    <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+                            <p class="text-sm text-gray-500">&copy; 2025 ThienPhuMut. Bản quyền thuộc về công ty TNHH Thiên Phú Mút.</p>
+                            <div class="flex items-center gap-4">
+                                <a href="#" class="text-xs text-gray-400 hover:text-[#F875AA] transition-colors">Chính sách bảo mật</a>
+                                <span class="text-gray-300">&bull;</span>
+                                <a href="#" class="text-xs text-gray-400 hover:text-[#F875AA] transition-colors">Điều khoản dịch vụ</a>
+                                <span class="text-gray-300">&bull;</span>
+                                <a href="#" class="text-xs text-gray-400 hover:text-[#F875AA] transition-colors">Cookies</a>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <a href="#" class="social-icon w-10 h-10 rounded-xl bg-white/80 border border-gray-100 flex items-center justify-center hover:border-[#F875AA]/30 hover:bg-gradient-to-br hover:from-[#F875AA]/10 hover:to-[#AEDEFC]/10 hover:shadow-lg">
+                                <i data-lucide="facebook" class="w-4 h-4 text-gray-500"></i>
+                            </a>
+                            <a href="#" class="social-icon w-10 h-10 rounded-xl bg-white/80 border border-gray-100 flex items-center justify-center hover:border-[#F875AA]/30 hover:bg-gradient-to-br hover:from-[#F875AA]/10 hover:to-[#AEDEFC]/10 hover:shadow-lg">
+                                <i data-lucide="linkedin" class="w-4 h-4 text-gray-500"></i>
+                            </a>
+                            <a href="#" class="social-icon w-10 h-10 rounded-xl bg-white/80 border border-gray-100 flex items-center justify-center hover:border-[#F875AA]/30 hover:bg-gradient-to-br hover:from-[#F875AA]/10 hover:to-[#AEDEFC]/10 hover:shadow-lg">
+                                <i data-lucide="instagram" class="w-4 h-4 text-gray-500"></i>
+                            </a>
+                            <a href="#" class="social-icon w-10 h-10 rounded-xl bg-white/80 border border-gray-100 flex items-center justify-center hover:border-[#F875AA]/30 hover:bg-gradient-to-br hover:from-[#F875AA]/10 hover:to-[#AEDEFC]/10 hover:shadow-lg">
+                                <i data-lucide="youtube" class="w-4 h-4 text-gray-500"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+        </main>
+    </div>
+
+    <!-- ===== IMPORT HISTORY MODAL ===== -->
+    <div id="importHistoryModal"
+        class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+        onclick="if(event.target===this) closeImportHistoryModal()">
+
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center">
+                        <i data-lucide="history" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-800">Lịch sử bảng chấm công đã gửi</h2>
+                        <p class="text-xs text-gray-400">Mỗi lần gửi bảng chấm công được lưu lại tại đây</p>
+                    </div>
+                </div>
+                <button onclick="closeImportHistoryModal()" class="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-lg hover:bg-gray-100">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="flex-1 overflow-y-auto p-6">
+
+                <!-- Session List View -->
+                <div id="importHistorySessionList">
+                    <div id="importHistoryLoading" class="flex items-center justify-center py-12 text-gray-400">
+                        <i data-lucide="loader-2" class="w-6 h-6 animate-spin mr-2"></i>
+                        <span>Đang tải lịch sử...</span>
+                    </div>
+                    <div id="importHistoryEmpty" class="hidden flex-col items-center justify-center py-12 text-center text-gray-400">
+                        <i data-lucide="inbox" class="w-12 h-12 mb-3 opacity-30"></i>
+                        <p class="font-medium">Chưa có lịch sử nào</p>
+                        <p class="text-sm mt-1">Lịch sử sẽ xuất hiện sau lần gửi đầu tiên</p>
+                    </div>
+                    <div id="importHistoryList" class="space-y-3 hidden"></div>
+                </div>
+
+                <!-- Session Detail View -->
+                <div id="importHistoryDetailView" class="hidden">
+                    <div class="flex items-center gap-3 mb-5">
+                        <button onclick="backToSessionList()" class="flex items-center gap-1.5 text-sm text-gray-500 hover:text-teal-600 transition-colors font-medium">
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                            Quay lại
+                        </button>
+                        <span class="text-gray-300">|</span>
+                        <span id="detailSessionTitle" class="text-sm font-semibold text-gray-700 truncate"></span>
+                        <span id="detailSessionDate" class="text-xs text-gray-400 flex-shrink-0"></span>
+                    </div>
+
+                    <!-- Summary Cards -->
+                    <div id="detailSummaryCards" class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-5"></div>
+
+                    <!-- Filter Tabs -->
+                    <div class="flex gap-2 mb-4 flex-wrap">
+                        <button onclick="filterDetailTable('all')" data-filter="all"
+                            class="detail-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-teal-500 text-white">Tất cả</button>
+                        <button onclick="filterDetailTable('sent')" data-filter="sent"
+                            class="detail-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200">Đã gửi</button>
+                        <button onclick="filterDetailTable('failed')" data-filter="failed"
+                            class="detail-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200">Lỗi</button>
+                        <button onclick="filterDetailTable('no_gmail')" data-filter="no_gmail"
+                            class="detail-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200">Chưa có Gmail</button>
+                        <button onclick="filterDetailTable('not_found')" data-filter="not_found"
+                            class="detail-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200">Không tìm thấy</button>
+                        <button onclick="filterDetailTable('limit_reached')" data-filter="limit_reached"
+                            class="detail-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200">Vượt quota</button>
+                    </div>
+
+                    <!-- Detail Table -->
+                    <div class="overflow-x-auto rounded-xl border border-gray-100">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wide">
+                                    <th class="text-left px-4 py-3 font-medium">#</th>
+                                    <th class="text-left px-4 py-3 font-medium">Mã NV</th>
+                                    <th class="text-left px-4 py-3 font-medium">Họ tên</th>
+                                    <th class="text-left px-4 py-3 font-medium">Email</th>
+                                    <th class="text-left px-4 py-3 font-medium">Trạng thái</th>
+                                    <th class="text-left px-4 py-3 font-medium">Ghi chú lỗi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detailTableBody" class="divide-y divide-gray-50"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!-- ===== END IMPORT HISTORY MODAL ===== -->
+
+    <script src="/js/sendTimesheet.js"></script>
+
+</body></html>
