@@ -461,6 +461,8 @@ async function sendBatchTimesheet() {
         formData.append('timesheetFile', timesheetFile);
         formData.append('timesheet_number', document.getElementById('timesheetNumber').value);
         formData.append('save_month', document.getElementById('saveMonth').value.trim());
+        formData.append('skip_from', document.getElementById('skipFrom').value || '0');
+        formData.append('skip_to', document.getElementById('skipTo').value || '0');
 
         // Track results
         const results = {
