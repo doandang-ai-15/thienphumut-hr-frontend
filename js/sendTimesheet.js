@@ -102,6 +102,7 @@ document.addEventListener('DOMContentLoaded', function() {
     lucide.createIcons();
     loadEmailStats();
     setupTimesheetSending();
+    addHolidayRange(); // Initialize with one empty range row
 });
 
 // ========== TIMESHEET SENDING FUNCTIONS ==========
@@ -461,8 +462,7 @@ async function sendBatchTimesheet() {
         formData.append('timesheetFile', timesheetFile);
         formData.append('timesheet_number', document.getElementById('timesheetNumber').value);
         formData.append('save_month', document.getElementById('saveMonth').value.trim());
-        formData.append('skip_from', document.getElementById('skipFrom').value || '0');
-        formData.append('skip_to', document.getElementById('skipTo').value || '0');
+        formData.append('holiday_ranges', JSON.stringify(getHolidayRanges()));
 
         // Track results
         const results = {
@@ -679,4 +679,65 @@ async function sendBatchTimesheet() {
         sendButton.disabled = false;
         lucide.createIcons();
     }
+}
+
+// ============================================================
+// Holiday Ranges — multiple non-consecutive date ranges
+// ============================================================
+
+function addHolidayRange() {
+    const list = document.getElementById('holidayRangesList');
+    const row = document.createElement('div');
+    row.className = 'holiday-range-row flex items-end gap-2';
+    row.style.animation = 'fadeInUp 0.2s ease-out forwards';
+    row.innerHTML = `
+        <div class="flex items-center mb-2.5 shrink-0">
+            <i data-lucide="calendar-range" class="w-3.5 h-3.5 text-amber-400"></i>
+        </div>
+        <div class="flex-1 grid grid-cols-2 gap-2">
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Từ ngày</label>
+                <input type="number" class="holiday-from w-full px-3 py-2 rounded-lg border border-amber-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-all" min="1" max="31" placeholder="VD: 12">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Đến ngày</label>
+                <input type="number" class="holiday-to w-full px-3 py-2 rounded-lg border border-amber-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-all" min="1" max="31" placeholder="VD: 14">
+            </div>
+        </div>
+        <button type="button" onclick="removeHolidayRange(this)" class="holiday-remove mb-0.5 p-1.5 rounded-lg text-gray-300 hover:text-red-400 hover:bg-red-50 transition-all" title="Xóa khoảng này">
+            <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+    `;
+    list.appendChild(row);
+    lucide.createIcons();
+    updateHolidayRemoveButtons();
+}
+
+function removeHolidayRange(btn) {
+    btn.closest('.holiday-range-row').remove();
+    updateHolidayRemoveButtons();
+}
+
+function updateHolidayRemoveButtons() {
+    const rows = document.querySelectorAll('.holiday-range-row');
+    rows.forEach(row => {
+        row.querySelector('.holiday-remove').style.visibility = rows.length === 1 ? 'hidden' : 'visible';
+    });
+    const countEl = document.getElementById('holidayRangesCount');
+    if (rows.length > 1) {
+        countEl.textContent = `${rows.length} khoảng`;
+        countEl.classList.remove('hidden');
+    } else {
+        countEl.classList.add('hidden');
+    }
+}
+
+function getHolidayRanges() {
+    const ranges = [];
+    document.querySelectorAll('.holiday-range-row').forEach(row => {
+        const from = parseInt(row.querySelector('.holiday-from').value) || 0;
+        const to = parseInt(row.querySelector('.holiday-to').value) || 0;
+        if (from > 0 && to > 0) ranges.push({ from, to });
+    });
+    return ranges;
 }
